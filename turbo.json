@@ -1,6 +1,19 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
+  "globalEnv": [
+    "MONGODB_URI",
+    "JWT_ACCESS_SECRET",
+    "JWT_REFRESH_SECRET",
+    "FIELD_ENCRYPTION_KEY",
+    "CRON_SECRET",
+    "CLOUDINARY_*",
+    "RAZORPAY_*",
+    "PUSHER_*",
+    "NEXT_PUBLIC_*",
+    "LOG_LEVEL",
+    "VERCEL_*"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
