@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
+  FileUp,
   KeyRound,
   MoreHorizontal,
   Pencil,
@@ -67,6 +68,7 @@ import {
   useMembers,
   useResetMemberPassword,
 } from '@/features/members/api';
+import { BulkImportDialog } from '@/features/members/bulk-import-dialog';
 import { MemberFormDialog } from '@/features/members/member-form-dialog';
 import { MemberStatusBadge } from '@/features/members/status-badge';
 
@@ -93,6 +95,7 @@ export default function MembersPage() {
   const meta = data?.meta;
 
   const [formOpen, setFormOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
   const [editing, setEditing] = useState<MemberDto | null>(null);
   const [deleting, setDeleting] = useState<MemberDto | null>(null);
 
@@ -103,15 +106,21 @@ export default function MembersPage() {
         description={meta ? `${meta.total} members in your community` : undefined}
         actions={
           isAdmin && (
-            <Button
-              onClick={() => {
-                setEditing(null);
-                setFormOpen(true);
-              }}
-            >
-              <Plus />
-              Add member
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setBulkOpen(true)}>
+                <FileUp />
+                Bulk import
+              </Button>
+              <Button
+                onClick={() => {
+                  setEditing(null);
+                  setFormOpen(true);
+                }}
+              >
+                <Plus />
+                Add member
+              </Button>
+            </div>
           )
         }
       />
@@ -201,6 +210,7 @@ export default function MembersPage() {
       </Card>
 
       <MemberFormDialog open={formOpen} onOpenChange={setFormOpen} member={editing} />
+      <BulkImportDialog open={bulkOpen} onOpenChange={setBulkOpen} />
       <DeleteMemberDialog member={deleting} onClose={() => setDeleting(null)} />
     </div>
   );

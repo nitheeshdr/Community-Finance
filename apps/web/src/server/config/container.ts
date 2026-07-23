@@ -23,6 +23,7 @@ import { DashboardService } from '../services/dashboard.service';
 import { DocumentRepository, DocumentService } from '../services/document.service';
 import { EventService } from '../services/event.service';
 import { ExpenseRepository, ExpenseService } from '../services/expense.service';
+import { ExportService } from '../services/export.service';
 import { IncomeService } from '../services/income.service';
 import { ReportService } from '../services/report.service';
 import { SearchService } from '../services/search.service';
@@ -168,6 +169,8 @@ export const getReportService = () =>
     'ReportService',
     () => new ReportService(getFeeConfigRepository(), getAuditService(), getNotificationService())
   );
+export const getExportService = () =>
+  container.resolve('ExportService', () => new ExportService(getReportService()));
 export const getDashboardService = () =>
   container.resolve(
     'DashboardService',

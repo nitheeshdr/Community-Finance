@@ -98,6 +98,14 @@ export class ReportService {
     return this.computeLive(communityId, range);
   }
 
+  /** Live report over an arbitrary custom date range (advanced export). */
+  async generateRange(communityId: string, from: Date, to: Date): Promise<FinancialReportDto> {
+    const label = `${from.toISOString().slice(0, 10)} → ${to.toISOString().slice(0, 10)}`;
+    // `to` is inclusive from the caller's perspective; range.to is exclusive.
+    const toExclusive = new Date(to.getTime() + 24 * 60 * 60 * 1000);
+    return this.computeLive(communityId, { from, to: toExclusive, label });
+  }
+
   private async computeLive(communityId: string, range: DateRange): Promise<FinancialReportDto> {
     const cid = new Types.ObjectId(communityId);
     const inRange = { $gte: range.from, $lt: range.to };

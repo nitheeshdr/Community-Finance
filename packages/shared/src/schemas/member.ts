@@ -46,6 +46,45 @@ export const memberListQuerySchema = paginationQuerySchema.extend({
 
 export const memberIdParamSchema = z.object({ id: objectIdSchema });
 
+/**
+ * Bulk CSV import row. Password optional — the server generates one and
+ * returns it in the import results when omitted.
+ */
+export const bulkMemberRowSchema = z.object({
+  name: z.string().trim().min(2, 'Name is too short').max(100),
+  phone: phoneSchema,
+  password: z
+    .string()
+    .min(AUTH.MIN_PASSWORD_LENGTH)
+    .max(128)
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  address: z.string().trim().max(500).optional(),
+  aadhaar: z
+    .string()
+    .regex(/^\d{12}$/, 'Aadhaar must be 12 digits')
+    .optional()
+    .or(z.literal('').transform(() => undefined)),
+  memberSince: z.coerce.date().optional(),
+});
+
+export const bulkCreateMembersSchema = z.object({
+  members: z.array(bulkMemberRowSchema).min(1, 'No rows found').max(200, 'Max 200 rows per import'),
+});
+
+export interface BulkImportResultRow {
+  row: number;
+  name: string;
+  phone: string;
+  status: 'CREATED' | 'FAILED';
+  error?: string;
+  /** One-time generated password (share with the member; not shown again). */
+  password?: string;
+}
+
+export type BulkMemberRow = z.infer<typeof bulkMemberRowSchema>;
+export type BulkCreateMembersInput = z.infer<typeof bulkCreateMembersSchema>;
+
 export type CreateMemberInput = z.infer<typeof createMemberSchema>;
 export type UpdateMemberInput = z.infer<typeof updateMemberSchema>;
 export type ChangeMemberStatusInput = z.infer<typeof changeMemberStatusSchema>;

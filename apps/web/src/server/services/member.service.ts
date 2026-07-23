@@ -1,9 +1,12 @@
+import { randomInt } from 'node:crypto';
 import { Types } from 'mongoose';
 import {
   AuditAction,
   AuditEntity,
   UserRole,
   UserStatus,
+  type BulkImportResultRow,
+  type BulkMemberRow,
   type ChangeMemberStatusInput,
   type CreateMemberInput,
   type MemberDto,
@@ -117,6 +120,83 @@ export class MemberService {
     });
     await this.fireMembershipChange(communityId, `Member added: ${created.name}`);
     return toMemberDto(created);
+  }
+
+  /**
+   * CSV bulk import. Row-by-row validation with per-row outcomes;
+   * passwords are auto-generated when omitted and returned ONCE in the
+   * result so the admin can distribute them. The budget split recalcs
+   * a single time at the end, not per member.
+   */
+  async bulkCreate(
+    communityId: string,
+    rows: BulkMemberRow[],
+    actorId: string
+  ): Promise<BulkImportResultRow[]> {
+    const results: BulkImportResultRow[] = [];
+    const seenPhones = new Set<string>();
+    let created = 0;
+
+    for (const [index, row] of rows.entries()) {
+      const base = { row: index + 1, name: row.name, phone: row.phone };
+      try {
+        if (seenPhones.has(row.phone)) {
+          throw new ConflictError('Duplicate phone number within the file');
+        }
+        seenPhones.add(row.phone);
+        if (await this.users.phoneExists(communityId, row.phone)) {
+          throw new ConflictError('A member with this phone number already exists');
+        }
+
+        const generated = row.password ? undefined : generatePassword();
+        const password = row.password ?? generated!;
+
+        await this.users.create(communityId, {
+          name: row.name,
+          phone: row.phone,
+          passwordHash: await hashPassword(password),
+          role: UserRole.MEMBER,
+          status: UserStatus.ACTIVE,
+          address: row.address,
+          family: [],
+          memberSince: row.memberSince ?? new Date(),
+          mustChangePassword: true,
+          ...(row.aadhaar
+            ? {
+                aadhaarEncrypted: encryptField(row.aadhaar),
+                aadhaarMasked: maskAadhaar(row.aadhaar),
+              }
+            : {}),
+        } as never);
+
+        created++;
+        results.push({ ...base, status: 'CREATED', password: generated });
+      } catch (err) {
+        results.push({
+          ...base,
+          status: 'FAILED',
+          error: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
+    }
+
+    if (created > 0) {
+      await this.fireMembershipChange(
+        communityId,
+        `Bulk import: ${created} member${created === 1 ? '' : 's'} added`
+      );
+      await this.audit.record({
+        action: AuditAction.CREATE,
+        entity: AuditEntity.USER,
+        after: {
+          bulkImport: true,
+          created,
+          failed: results.length - created,
+          importedBy: actorId,
+        },
+      });
+    }
+    return results;
   }
 
   async update(
@@ -252,6 +332,16 @@ export class MemberService {
 
 function escapeRegex(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/** Readable one-time password: no ambiguous glyphs, letter+digit guaranteed. */
+function generatePassword(): string {
+  const letters = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz';
+  const digits = '23456789';
+  const all = letters + digits;
+  let pw = letters[randomInt(letters.length)]! + digits[randomInt(digits.length)]!;
+  for (let i = 0; i < 8; i++) pw += all[randomInt(all.length)]!;
+  return pw;
 }
 
 function diffFields(existing: UserEntity, update: Record<string, unknown>): Record<string, unknown> {

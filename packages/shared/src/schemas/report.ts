@@ -12,6 +12,43 @@ export const reportExportQuerySchema = reportQuerySchema.extend({
   format: z.nativeEnum(ExportFormat),
 });
 
+/** What an advanced export contains. */
+export enum ExportType {
+  SUMMARY = 'SUMMARY',
+  PAYMENTS = 'PAYMENTS',
+  EXPENSES = 'EXPENSES',
+  INCOME = 'INCOME',
+  MEMBERS = 'MEMBERS',
+}
+
+/**
+ * Advanced export: pick the data set, a custom date range, and filters.
+ * Filters apply only where meaningful for the chosen type.
+ */
+export const advancedExportQuerySchema = z
+  .object({
+    type: z.nativeEnum(ExportType),
+    format: z.nativeEnum(ExportFormat),
+    from: z.coerce.date().optional(),
+    to: z.coerce.date().optional(),
+    eventId: objectIdSchema.optional(),
+    memberId: objectIdSchema.optional(),
+    status: z.string().trim().max(30).optional(),
+    category: z.string().trim().max(100).optional(),
+    source: z.string().trim().max(30).optional(),
+  })
+  .superRefine((v, ctx) => {
+    if (v.from && v.to && v.from > v.to) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['to'],
+        message: 'End date must be after the start date',
+      });
+    }
+  });
+
+export type AdvancedExportQuery = z.infer<typeof advancedExportQuerySchema>;
+
 export const closePeriodSchema = z.object({
   period: periodSchema,
 });

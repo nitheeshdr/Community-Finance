@@ -9,6 +9,7 @@ import {
   FileSpreadsheet,
   FileText,
   Lock,
+  SlidersHorizontal,
 } from 'lucide-react';
 import {
   API_PREFIX,
@@ -19,6 +20,7 @@ import {
   type FinancialReportDto,
 } from '@community-finance/shared';
 import { apiClient, apiErrorMessage, getAccessToken } from '@/lib/api-client';
+import { AdvancedExportDialog } from '@/features/reports/advanced-export-dialog';
 import { useAuth } from '@/lib/auth-context';
 import { formatDate, inr } from '@/lib/utils';
 import { PageHeader } from '@/components/shared/page-header';
@@ -58,6 +60,7 @@ export default function ReportsPage() {
 
   const [period, setPeriod] = useState<ReportPeriod>(ReportPeriod.MONTHLY);
   const [anchorDate, setAnchorDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   const { data: report, isLoading } = useQuery({
     queryKey: ['reports', period, anchorDate],
@@ -135,6 +138,10 @@ export default function ReportsPage() {
             <Button variant="outline" size="sm" onClick={() => void exportReport(ExportFormat.CSV)}>
               <Download />
               CSV
+            </Button>
+            <Button size="sm" onClick={() => setAdvancedOpen(true)}>
+              <SlidersHorizontal />
+              Advanced export
             </Button>
           </div>
         }
@@ -269,6 +276,8 @@ export default function ReportsPage() {
           )}
         </div>
       )}
+
+      <AdvancedExportDialog open={advancedOpen} onOpenChange={setAdvancedOpen} />
     </div>
   );
 }
