@@ -15,6 +15,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import {
+  EventFundingMode,
   EventStatus,
   PaymentStatus,
   UserRole,
@@ -85,9 +86,16 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl font-semibold">{event.name}</h1>
             <EventStatusBadge status={event.status} />
+            <Badge variant={event.fundingMode === EventFundingMode.BALANCE ? 'secondary' : 'outline'}>
+              {event.fundingMode === EventFundingMode.BALANCE
+                ? 'From community balance'
+                : event.participantIds.length > 0
+                  ? `Split · ${event.participantIds.length} members`
+                  : 'Split · all members'}
+            </Badge>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             {formatDate(event.date)}
@@ -105,10 +113,12 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                   <Pencil />
                   Edit
                 </Button>
-                <Button onClick={() => setPayOpen(true)}>
-                  <IndianRupee />
-                  Record contribution
-                </Button>
+                {event.fundingMode === EventFundingMode.SPLIT && (
+                  <Button onClick={() => setPayOpen(true)}>
+                    <IndianRupee />
+                    Record contribution
+                  </Button>
+                )}
                 <Button
                   variant="outline"
                   onClick={() => statusMutation.mutate({ status: EventStatus.CLOSED })}
@@ -169,6 +179,15 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
+        {event.fundingMode === EventFundingMode.BALANCE ? (
+          <Card className="lg:col-span-2">
+            <CardContent className="flex items-center gap-3 py-8 text-sm text-muted-foreground">
+              <IndianRupee className="h-5 w-5" />
+              This event is funded from the community balance — no member contributions are
+              collected. Expenses draw down the community balance directly.
+            </CardContent>
+          </Card>
+        ) : (
         <Card className="lg:col-span-2">
           <CardHeader className="flex-row items-center justify-between space-y-0">
             <CardTitle className="flex items-center gap-2 text-sm">
@@ -219,6 +238,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             )}
           </CardContent>
         </Card>
+        )}
 
         <Card>
           <CardHeader>

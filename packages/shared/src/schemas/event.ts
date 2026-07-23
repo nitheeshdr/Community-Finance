@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { EventCategory, EventStatus } from '../enums';
+import { EventCategory, EventFundingMode, EventStatus } from '../enums';
 import {
   amountRupeesSchema,
   objectIdSchema,
@@ -13,6 +13,13 @@ export const createEventSchema = z.object({
   date: z.coerce.date(),
   endDate: z.coerce.date().optional(),
   budget: amountRupeesSchema,
+  /** BALANCE = funded from community balance; SPLIT = members contribute. */
+  fundingMode: z.nativeEnum(EventFundingMode).default(EventFundingMode.SPLIT),
+  /**
+   * SPLIT mode: which members share the budget. Empty/omitted = all
+   * active members. Admin can deselect members in the create dialog.
+   */
+  participantIds: z.array(objectIdSchema).max(1000).optional(),
   organizerId: objectIdSchema.optional(),
   images: z.array(z.string().url()).max(10).default([]),
   /** Super-admin flag: allow budget above available community balance. */

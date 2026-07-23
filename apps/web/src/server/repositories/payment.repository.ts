@@ -18,6 +18,10 @@ export class PaymentRepository extends BaseRepository<PaymentDoc> {
     return PaymentModel.findOne({ razorpayPaymentId: paymentId }).lean<PaymentEntity>();
   }
 
+  async findByRazorpayLinkId(linkId: string): Promise<PaymentEntity | null> {
+    return PaymentModel.findOne({ razorpayLinkId: linkId }).lean<PaymentEntity>();
+  }
+
   /** Subscription payment row for member+period, any live status. */
   async findSubscriptionPayment(
     communityId: string,

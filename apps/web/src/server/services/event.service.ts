@@ -1,6 +1,7 @@
 import {
   AuditAction,
   AuditEntity,
+  EventFundingMode,
   EventStatus,
   ExpenseStatus,
   NotificationType,
@@ -82,11 +83,18 @@ export class EventService {
     actorRole: UserRole
   ): Promise<EventDto> {
     const budgetPaise = toPaise(input.budget);
-
-    // Business rule: budget cannot exceed available balance unless the
-    // super admin explicitly overrides.
     const balance = await this.balance.getCurrentBalance(communityId);
-    if (budgetPaise > balance) {
+
+    if (input.fundingMode === EventFundingMode.BALANCE) {
+      // Balance-funded events must actually fit in the available balance.
+      if (budgetPaise > balance) {
+        throw new BusinessRuleError(
+          `Available balance is ${formatINR(balance)} — a balance-funded event cannot ` +
+            `budget ${formatINR(budgetPaise)}. Reduce the budget or split it among members.`
+        );
+      }
+    } else if (budgetPaise > balance) {
+      // SPLIT mode keeps the original rule with super-admin override.
       if (!input.budgetOverride) {
         throw new BusinessRuleError(
           `Budget ${formatINR(budgetPaise)} exceeds available balance ${formatINR(balance)}. ` +
@@ -106,6 +114,8 @@ export class EventService {
       date: input.date,
       endDate: input.endDate,
       budget: budgetPaise,
+      fundingMode: input.fundingMode,
+      participantIds: input.fundingMode === EventFundingMode.SPLIT ? (input.participantIds ?? []) : [],
       organizerId: input.organizerId,
       images: input.images,
       budgetOverride: input.budgetOverride,
@@ -145,6 +155,13 @@ export class EventService {
 
     const update: Record<string, unknown> = { ...input };
     let budgetChanged = false;
+    if (
+      input.participantIds &&
+      JSON.stringify(input.participantIds) !==
+        JSON.stringify((existing.participantIds ?? []).map(String))
+    ) {
+      budgetChanged = true; // participant scope changed ⇒ recalc splits
+    }
 
     if (input.budget !== undefined) {
       const budgetPaise = toPaise(input.budget);
@@ -316,6 +333,8 @@ export function toEventDto(event: EventEntity): EventDto {
     date: event.date.toISOString(),
     endDate: event.endDate?.toISOString(),
     budget: event.budget,
+    fundingMode: (event.fundingMode ?? EventFundingMode.SPLIT) as EventDto['fundingMode'],
+    participantIds: (event.participantIds ?? []).map(String),
     perHeadAmount: event.perHeadAmount ?? 0,
     collectedAmount: event.collectedAmount ?? 0,
     spentAmount: event.spentAmount ?? 0,

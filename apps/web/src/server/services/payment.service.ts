@@ -191,6 +191,84 @@ export class PaymentService {
   }
 
   /* ------------------------------------------------------------ */
+  /* Member self-service: pay an event share via Razorpay link     */
+  /* ------------------------------------------------------------ */
+
+  /**
+   * "Pay now" for the member's remaining event share. Creates (or
+   * reuses) a Razorpay Payment Link; settlement happens when the
+   * `payment_link.paid` webhook arrives.
+   */
+  async createEventPayLink(
+    communityId: string,
+    eventId: string,
+    memberId: string
+  ): Promise<{ paymentId: string; shortUrl: string; amount: number }> {
+    const event = await this.events.findById(communityId, eventId);
+    if (!event) throw new NotFoundError('Event');
+
+    const split = await this.eventSplits.findOne(communityId, { eventId, memberId });
+    if (!split) throw new BusinessRuleError('You have no contribution share for this event');
+    const remaining = split.splitAmount - split.paidAmount;
+    if (remaining <= 0) {
+      throw new BusinessRuleError('Your share for this event is already fully paid');
+    }
+
+    // Reuse a live link if one exists for the same remaining amount.
+    const existing = (await this.payments.findOne(communityId, {
+      memberId,
+      eventId,
+      type: PaymentType.EVENT_CONTRIBUTION,
+      method: PaymentMethod.RAZORPAY,
+      status: PaymentStatus.PENDING,
+      razorpayLinkId: { $ne: null },
+    })) as PaymentEntity | null;
+    if (existing?.razorpayLinkUrl && existing.amount === remaining) {
+      return {
+        paymentId: String(existing._id),
+        shortUrl: existing.razorpayLinkUrl,
+        amount: existing.amount,
+      };
+    }
+
+    const member = (await this.users.findById(communityId, memberId)) as UserEntity | null;
+    const { getRazorpayClient } = await import('../lib/razorpay');
+    const client = await getRazorpayClient(communityId);
+
+    const payment = (await this.payments.create(communityId, {
+      memberId,
+      type: PaymentType.EVENT_CONTRIBUTION,
+      method: PaymentMethod.RAZORPAY,
+      status: PaymentStatus.PENDING,
+      amount: remaining,
+      eventId,
+    } as never)) as PaymentEntity;
+
+    const link = (await client.paymentLink.create({
+      amount: remaining,
+      currency: 'INR',
+      description: `${event.name} — contribution`,
+      customer: {
+        name: member?.name,
+        contact: member?.phone ? `+91${member.phone}` : undefined,
+      },
+      notify: { sms: false, email: false },
+      notes: {
+        communityId,
+        paymentId: String(payment._id),
+        eventId,
+        memberId,
+      },
+    })) as { id: string; short_url: string };
+
+    await this.payments.updateById(communityId, String(payment._id), {
+      $set: { razorpayLinkId: link.id, razorpayLinkUrl: link.short_url },
+    });
+
+    return { paymentId: String(payment._id), shortUrl: link.short_url, amount: remaining };
+  }
+
+  /* ------------------------------------------------------------ */
   /* Settlement pipeline (shared: manual approval + webhooks)      */
   /* ------------------------------------------------------------ */
 

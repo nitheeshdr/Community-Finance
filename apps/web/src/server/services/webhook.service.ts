@@ -24,6 +24,9 @@ interface RazorpayWebhookBody {
     payment?: { entity: RazorpayPaymentEntity };
     subscription?: { entity: RazorpaySubscriptionEntityRaw };
     refund?: { entity: { id: string; payment_id: string; amount: number } };
+    payment_link?: {
+      entity: { id: string; notes?: Record<string, string> };
+    };
   };
   created_at: number;
 }
@@ -100,6 +103,9 @@ export class WebhookService {
         case 'subscription.cancelled':
         case 'subscription.completed':
           await this.onSubscriptionStatusChange(body);
+          return 'processed';
+        case 'payment_link.paid':
+          await this.onPaymentLinkPaid(body);
           return 'processed';
         case 'payment.failed':
           await this.onPaymentFailed(body);
@@ -181,6 +187,55 @@ export class WebhookService {
       after: { amount: payEntity.amount, razorpayPaymentId: payEntity.id },
       actor: {
         userId: memberId,
+        userName: member?.name ?? 'Member',
+        role: UserRole.MEMBER,
+        communityId,
+      },
+    });
+  }
+
+  /** Member paid their event share via the "Pay now" payment link. */
+  private async onPaymentLinkPaid(body: RazorpayWebhookBody): Promise<void> {
+    const link = body.payload.payment_link?.entity;
+    const payEntity = body.payload.payment?.entity;
+    if (!link) return;
+
+    // Locate the pending payment row: by link id, falling back to notes.
+    let payment = await this.payments.findByRazorpayLinkId(link.id);
+    if (!payment && link.notes?.communityId && link.notes.paymentId) {
+      payment = (await this.payments.findById(
+        link.notes.communityId,
+        link.notes.paymentId
+      )) as PaymentEntity | null;
+    }
+    if (!payment) {
+      logger.warn({ linkId: link.id }, 'payment_link.paid for unknown payment');
+      return;
+    }
+    if (payment.status === PaymentStatus.PAID) return; // duplicate
+
+    const communityId = String(payment.communityId);
+    const updated = (await this.payments.updateById(communityId, String(payment._id), {
+      $set: {
+        status: PaymentStatus.PAID,
+        razorpayPaymentId: payEntity?.id,
+        paidAt: new Date(body.created_at * 1000),
+      },
+    })) as PaymentEntity;
+
+    await this.paymentService.settle(communityId, updated);
+
+    const member = (await this.users.findById(
+      communityId,
+      String(payment.memberId)
+    )) as UserEntity | null;
+    await this.audit.record({
+      action: AuditAction.PAYMENT_RECEIVED,
+      entity: AuditEntity.PAYMENT,
+      entityId: String(payment._id),
+      after: { amount: updated.amount, via: 'payment-link', razorpayPaymentId: payEntity?.id },
+      actor: {
+        userId: String(payment.memberId),
         userName: member?.name ?? 'Member',
         role: UserRole.MEMBER,
         communityId,

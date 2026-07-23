@@ -51,7 +51,21 @@ export class BudgetSplitService {
     event: EventEntity,
     trigger: string
   ): Promise<{ perHead: number; activeCount: number } | null> {
-    const activeMemberIds = await this.users.findActiveMemberIds(communityId);
+    // Balance-funded events have no member shares at all.
+    if (event.fundingMode === 'BALANCE') {
+      await this.events.updateById(communityId, String(event._id), {
+        $set: { perHeadAmount: 0 },
+      });
+      return null;
+    }
+
+    let activeMemberIds = await this.users.findActiveMemberIds(communityId);
+    // Restrict to the admin-selected participants when a scope is set.
+    const scope = (event.participantIds ?? []).map(String);
+    if (scope.length > 0) {
+      const scopeSet = new Set(scope);
+      activeMemberIds = activeMemberIds.filter((id) => scopeSet.has(String(id)));
+    }
     const activeCount = activeMemberIds.length;
     const perHead = activeCount > 0 ? Math.ceil(event.budget / activeCount) : 0;
 

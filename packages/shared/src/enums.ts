@@ -74,6 +74,13 @@ export enum EventStatus {
   CANCELLED = 'CANCELLED',
 }
 
+export enum EventFundingMode {
+  /** Paid from the community's available balance — no member contributions. */
+  BALANCE = 'BALANCE',
+  /** Budget split equally among the selected (or all) active members. */
+  SPLIT = 'SPLIT',
+}
+
 export enum EventCategory {
   TEMPLE_FESTIVAL = 'TEMPLE_FESTIVAL',
   SPORTS = 'SPORTS',

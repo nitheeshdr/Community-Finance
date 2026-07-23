@@ -1,5 +1,5 @@
 import { Schema, model, models, type InferSchemaType, type Model } from 'mongoose';
-import { EventCategory, EventStatus } from '@community-finance/shared';
+import { EventCategory, EventFundingMode, EventStatus } from '@community-finance/shared';
 
 const eventSchema = new Schema(
   {
@@ -21,6 +21,14 @@ const eventSchema = new Schema(
     endDate: { type: Date },
     /** Paise. */
     budget: { type: Number, required: true, min: 0 },
+    /** BALANCE = funded from community balance; SPLIT = member shares. */
+    fundingMode: {
+      type: String,
+      enum: Object.values(EventFundingMode),
+      default: EventFundingMode.SPLIT,
+    },
+    /** SPLIT mode participant scope; empty = all active members. */
+    participantIds: { type: [Schema.Types.ObjectId], ref: 'User', default: [] },
     /** Paise — denormalized from the latest split calculation. */
     perHeadAmount: { type: Number, default: 0 },
     /** Paise — denormalized running totals, updated transactionally. */

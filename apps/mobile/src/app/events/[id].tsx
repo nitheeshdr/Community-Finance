@@ -1,7 +1,16 @@
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
-import { PaymentStatus } from '@community-finance/shared';
+import * as WebBrowser from 'expo-web-browser';
+import {
+  EventFundingMode,
+  PaymentStatus,
+  type ApiSuccess,
+  type EventPayLinkDto,
+} from '@community-finance/shared';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useQueryClient } from '@tanstack/react-query';
+import { api, apiErrorMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { formatDate, inr } from '@/lib/format';
 import { useEvent, useEventSplits } from '@/lib/queries';
@@ -10,11 +19,29 @@ import { Card, Row, SectionTitle, StatusBadge } from '@/components/ui';
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const qc = useQueryClient();
   const { data: event, isLoading } = useEvent(id);
   const { data: splits } = useEventSplits(id);
+  const [paying, setPaying] = useState(false);
 
   const mySplit = splits?.find((s) => s.memberId === user?.id);
   const paidCount = splits?.filter((s) => s.status === PaymentStatus.PAID).length ?? 0;
+  const remaining = mySplit ? mySplit.splitAmount - mySplit.paidAmount : 0;
+
+  async function payNow() {
+    setPaying(true);
+    try {
+      const res = await api.post<ApiSuccess<EventPayLinkDto>>(`/events/${id}/pay`);
+      const link = res.data.data;
+      await WebBrowser.openBrowserAsync(link.shortUrl);
+      // Refresh splits when the user returns — webhook may have settled it.
+      await qc.invalidateQueries({ queryKey: ['events', 'splits', id] });
+    } catch (err) {
+      Alert.alert('Payment', apiErrorMessage(err));
+    } finally {
+      setPaying(false);
+    }
+  }
 
   if (isLoading || !event) {
     return (
@@ -58,9 +85,7 @@ export default function EventDetailScreen() {
                 </Text>
                 <Text className="mt-0.5 text-xs text-on-surface-variant dark:text-on-surface-variant-d">
                   Paid {inr(mySplit.paidAmount)}
-                  {mySplit.paidAmount < mySplit.splitAmount
-                    ? ` · ${inr(mySplit.splitAmount - mySplit.paidAmount)} remaining`
-                    : ''}
+                  {remaining > 0 ? ` · ${inr(remaining)} remaining` : ''}
                 </Text>
               </View>
               {mySplit.status === PaymentStatus.PAID ? (
@@ -72,6 +97,35 @@ export default function EventDetailScreen() {
                 <StatusBadge status={mySplit.status} />
               )}
             </View>
+
+            {/* Pay now — only when the member still owes something */}
+            {remaining > 0 && (
+              <Pressable
+                onPress={() => void payNow()}
+                disabled={paying}
+                className="mt-4 h-12 flex-row items-center justify-center gap-2 rounded-m3-md bg-primary active:opacity-80 dark:bg-primary-d"
+              >
+                {paying ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <>
+                    <MaterialCommunityIcons name="cash-fast" size={18} color="#fff" />
+                    <Text className="text-base font-semibold text-on-primary dark:text-on-primary-container">
+                      Pay {inr(remaining)} now
+                    </Text>
+                  </>
+                )}
+              </Pressable>
+            )}
+          </Card>
+        )}
+        {/* Balance-funded events: nothing to pay */}
+        {event.fundingMode === EventFundingMode.BALANCE && (
+          <Card className="mb-4 flex-row items-center gap-3">
+            <MaterialCommunityIcons name="wallet-outline" size={22} color="#4F46E5" />
+            <Text className="flex-1 text-sm text-on-surface-variant dark:text-on-surface-variant-d">
+              This event is funded from the community balance. No member contribution is needed.
+            </Text>
           </Card>
         )}
 

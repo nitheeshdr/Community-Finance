@@ -26,6 +26,9 @@ const paymentSchema = new Schema(
     rejectionReason: { type: String, maxlength: 500 },
     razorpayPaymentId: { type: String },
     razorpayOrderId: { type: String },
+    /** Razorpay Payment Link (one-time event contribution pay button). */
+    razorpayLinkId: { type: String },
+    razorpayLinkUrl: { type: String },
     razorpayInvoiceId: { type: String },
     razorpaySubscriptionId: { type: String },
     refundId: { type: String },
@@ -52,6 +55,7 @@ paymentSchema.index(
 paymentSchema.index({ communityId: 1, status: 1, createdAt: -1 });
 paymentSchema.index({ communityId: 1, eventId: 1 });
 paymentSchema.index({ razorpayPaymentId: 1 }, { sparse: true });
+paymentSchema.index({ razorpayLinkId: 1 }, { sparse: true });
 paymentSchema.index({ communityId: 1, receiptNumber: 1 }, { sparse: true });
 
 export type PaymentDoc = InferSchemaType<typeof paymentSchema>;

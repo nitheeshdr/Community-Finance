@@ -9,6 +9,7 @@ import type {
   CommunityType,
   DocumentType,
   EventCategory,
+  EventFundingMode,
   EventStatus,
   ExpenseStatus,
   IncomeSource,
@@ -174,6 +175,9 @@ export interface EventDto {
   date: string;
   endDate?: string;
   budget: number; // paise
+  fundingMode: EventFundingMode;
+  /** Empty array = all active members participate (SPLIT mode). */
+  participantIds: string[];
   perHeadAmount: number; // paise
   collectedAmount: number; // paise
   spentAmount: number; // paise
@@ -182,6 +186,13 @@ export interface EventDto {
   images: string[];
   budgetOverride: boolean;
   createdAt: string;
+}
+
+export interface EventPayLinkDto {
+  paymentId: string;
+  /** Razorpay hosted payment page for the member's remaining share. */
+  shortUrl: string;
+  amount: number; // paise
 }
 
 export interface EventSplitDto {
