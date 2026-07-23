@@ -14,7 +14,8 @@
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
     "seed": "npm run seed --workspace=@community-finance/web",
-    "clean": "turbo run clean && rm -rf node_modules"
+    "clean": "turbo run clean && rm -rf node_modules",
+    "mobile": "npm run start --workspace=@community-finance/mobile"
   },
   "devDependencies": {
     "turbo": "^2.5.0"
