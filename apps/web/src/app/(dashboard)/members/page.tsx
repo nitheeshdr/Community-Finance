@@ -106,7 +106,7 @@ export default function MembersPage() {
         description={meta ? `${meta.total} members in your community` : undefined}
         actions={
           isAdmin && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button variant="outline" onClick={() => setBulkOpen(true)}>
                 <FileUp />
                 Bulk import

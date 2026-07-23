@@ -58,7 +58,7 @@ function SettingsContent() {
     <div>
       <PageHeader title="Settings" description="Community configuration and your account" />
       <Tabs defaultValue={defaultTab}>
-        <TabsList>
+        <TabsList className="h-auto flex-wrap justify-start">
           {isSuperAdmin && <TabsTrigger value="fees">Monthly fee</TabsTrigger>}
           {isSuperAdmin && <TabsTrigger value="payments">Razorpay</TabsTrigger>}
           {isSuperAdmin && <TabsTrigger value="categories">Categories</TabsTrigger>}

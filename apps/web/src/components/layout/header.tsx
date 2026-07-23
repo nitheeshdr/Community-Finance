@@ -1,11 +1,14 @@
 'use client';
 
+import { useState } from 'react';
 import { useTheme } from 'next-themes';
-import { LogOut, Moon, MonitorSmartphone, Search, Sun, User } from 'lucide-react';
+import { LogOut, Menu, Moon, MonitorSmartphone, Search, Sun, User } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { initials } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { SidebarBrand, SidebarNav } from '@/components/layout/sidebar';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,9 +21,27 @@ import {
 export function Header({ onOpenSearch }: { onOpenSearch?: () => void }) {
   const { user, logout } = useAuth();
   const { setTheme, resolvedTheme } = useTheme();
+  const [navOpen, setNavOpen] = useState(false);
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-3 border-b bg-background px-4">
+    <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b bg-background px-3 md:px-4">
+      {/* Mobile navigation drawer */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="shrink-0 lg:hidden"
+        aria-label="Open navigation"
+        onClick={() => setNavOpen(true)}
+      >
+        <Menu className="h-5 w-5" />
+      </Button>
+      <Sheet open={navOpen} onOpenChange={setNavOpen}>
+        <SheetContent side="left" className="flex flex-col bg-sidebar p-0">
+          <SidebarBrand />
+          <SidebarNav onNavigate={() => setNavOpen(false)} />
+        </SheetContent>
+      </Sheet>
+
       <button
         type="button"
         onClick={onOpenSearch}
