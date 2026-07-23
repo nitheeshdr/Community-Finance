@@ -1,0 +1,26 @@
+{
+  "name": "community-finance",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Enterprise-grade multi-tenant Community Finance Management System",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "seed": "npm run seed --workspace=@community-finance/web",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "npm@10.9.4"
+}

@@ -1,0 +1,23 @@
+{
+  "name": "@community-finance/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared domain types, enums, constants, and Zod validation schemas",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@community-finance/config": "*",
+    "typescript": "^5.8.3"
+  }
+}

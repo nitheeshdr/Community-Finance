@@ -1,0 +1,9 @@
+{
+  "extends": "@community-finance/config/tsconfig/base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false
+  },
+  "include": ["src"]
+}
