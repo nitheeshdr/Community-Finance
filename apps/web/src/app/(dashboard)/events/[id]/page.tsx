@@ -2,6 +2,7 @@
 
 import { use, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -9,6 +10,7 @@ import {
   IndianRupee,
   Lock,
   Pencil,
+  Trash2,
   Users,
   XCircle,
 } from 'lucide-react';
@@ -33,6 +35,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import {
   useChangeEventStatus,
+  useDeleteEvent,
   useEvent,
   useEventSplitHistory,
   useEventSplits,
@@ -44,12 +47,15 @@ import { RecordPaymentDialog } from '@/features/payments/record-payment-dialog';
 export default function EventDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { user } = useAuth();
+  const router = useRouter();
   const isAdmin = user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.ADMIN;
+  const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
 
   const { data: event, isLoading } = useEvent(id);
   const { data: splits } = useEventSplits(id);
   const { data: history } = useEventSplitHistory(id);
   const statusMutation = useChangeEventStatus(id);
+  const deleteMutation = useDeleteEvent();
 
   const [editOpen, setEditOpen] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
@@ -124,6 +130,27 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
               >
                 <XCircle />
                 Cancel
+              </Button>
+            )}
+            {isSuperAdmin && (
+              <Button
+                variant="ghost"
+                className="text-destructive hover:text-destructive"
+                loading={deleteMutation.isPending}
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Delete "${event.name}" permanently?\n\nOnly possible while no expenses or collections are recorded — otherwise cancel the event instead.`
+                    )
+                  ) {
+                    deleteMutation.mutate(event.id, {
+                      onSuccess: () => router.push('/events'),
+                    });
+                  }
+                }}
+              >
+                <Trash2 />
+                Delete
               </Button>
             )}
           </div>

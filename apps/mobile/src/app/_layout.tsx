@@ -7,7 +7,11 @@ import { StatusBar } from 'expo-status-bar';
 import { PaperProvider } from 'react-native-paper';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
 import { getScheme, paperDarkTheme, paperLightTheme } from '@/lib/theme';
+import { loadThemePref } from '@/lib/theme-pref';
 import '../global.css';
+
+// Apply the saved light/dark preference before first paint.
+void loadThemePref();
 
 SplashScreen.preventAutoHideAsync();
 
