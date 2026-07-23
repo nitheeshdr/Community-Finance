@@ -4,7 +4,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { PaperProvider } from 'react-native-paper';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
+import { getScheme, paperDarkTheme, paperLightTheme } from '@/lib/theme';
 import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
@@ -13,7 +15,8 @@ function RootNavigator() {
   const { user, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
-  const colorScheme = useColorScheme();
+  const dark = useColorScheme() === 'dark';
+  const scheme = getScheme(dark);
 
   // Auth gate: unauthenticated users only see /login.
   useEffect(() => {
@@ -29,13 +32,11 @@ function RootNavigator() {
 
   return (
     <>
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      <StatusBar style={dark ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: {
-            backgroundColor: colorScheme === 'dark' ? '#12121a' : '#f8f8fb',
-          },
+          contentStyle: { backgroundColor: scheme.surface },
         }}
       >
         <Stack.Screen name="login" />
@@ -46,6 +47,9 @@ function RootNavigator() {
             headerShown: true,
             title: 'Event',
             headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: scheme.surface },
+            headerTintColor: scheme.onSurface,
+            headerShadowVisible: false,
           }}
         />
       </Stack>
@@ -54,6 +58,7 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
+  const dark = useColorScheme() === 'dark';
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -64,10 +69,12 @@ export default function RootLayout() {
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RootNavigator />
-      </AuthProvider>
-    </QueryClientProvider>
+    <PaperProvider theme={dark ? paperDarkTheme : paperLightTheme}>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <RootNavigator />
+        </AuthProvider>
+      </QueryClientProvider>
+    </PaperProvider>
   );
 }

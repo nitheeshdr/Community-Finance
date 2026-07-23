@@ -1,18 +1,16 @@
 import { useState } from 'react';
 import {
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Button, HelperText, TextInput } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { PHONE_REGEX } from '@community-finance/shared';
+import { Logo } from '@/components/logo';
 import { apiErrorMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
@@ -46,7 +44,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
+    <SafeAreaView className="flex-1 bg-surface dark:bg-surface-d">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
@@ -57,82 +55,63 @@ export default function LoginScreen() {
         >
           {/* Brand */}
           <View className="mb-10 items-center">
-            <View className="mb-4 h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-lg">
-              <MaterialCommunityIcons name="currency-inr" size={34} color="#fff" />
+            <View className="mb-5">
+              <Logo size={88} />
             </View>
-            <Text className="text-2xl font-bold text-gray-900 dark:text-white">
+            <Text className="text-[28px] font-bold leading-9 text-on-surface dark:text-on-surface-d">
               Community Finance
             </Text>
-            <Text className="mt-1 text-sm text-muted">
+            <Text className="mt-1 text-sm text-on-surface-variant dark:text-on-surface-variant-d">
               Transparent finances for your community
             </Text>
           </View>
 
-          {/* Form card */}
-          <View className="rounded-2xl bg-card p-5 shadow-sm dark:bg-card-dark">
-            <Text className="mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Mobile number
-            </Text>
-            <View className="mb-4 flex-row items-center rounded-xl border border-border bg-background px-3 dark:border-border-dark dark:bg-background-dark">
-              <MaterialCommunityIcons name="phone-outline" size={18} color="#6b7280" />
-              <TextInput
-                className="ml-2 h-12 flex-1 text-base text-gray-900 dark:text-white"
-                keyboardType="number-pad"
-                maxLength={10}
-                placeholder="98765 43210"
-                placeholderTextColor="#9ca3af"
-                value={phone}
-                onChangeText={setPhone}
-                autoComplete="tel"
-                testID="login-phone"
-              />
-            </View>
-
-            <Text className="mb-1.5 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Password
-            </Text>
-            <View className="mb-2 flex-row items-center rounded-xl border border-border bg-background px-3 dark:border-border-dark dark:bg-background-dark">
-              <MaterialCommunityIcons name="lock-outline" size={18} color="#6b7280" />
-              <TextInput
-                className="ml-2 h-12 flex-1 text-base text-gray-900 dark:text-white"
-                secureTextEntry={!showPassword}
-                placeholder="••••••••"
-                placeholderTextColor="#9ca3af"
-                value={password}
-                onChangeText={setPassword}
-                autoComplete="current-password"
-                testID="login-password"
-              />
-              <Pressable onPress={() => setShowPassword((v) => !v)} hitSlop={8}>
-                <MaterialCommunityIcons
-                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={18}
-                  color="#6b7280"
+          {/* M3 form surface */}
+          <View className="rounded-m3-xl bg-surface-container p-5 dark:bg-surface-container-d">
+            <TextInput
+              mode="outlined"
+              label="Mobile number"
+              keyboardType="number-pad"
+              maxLength={10}
+              value={phone}
+              onChangeText={setPhone}
+              autoComplete="tel"
+              left={<TextInput.Icon icon="phone-outline" />}
+              testID="login-phone"
+            />
+            <View className="h-3" />
+            <TextInput
+              mode="outlined"
+              label="Password"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+              autoComplete="current-password"
+              left={<TextInput.Icon icon="lock-outline" />}
+              right={
+                <TextInput.Icon
+                  icon={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  onPress={() => setShowPassword((v) => !v)}
                 />
-              </Pressable>
-            </View>
-
-            {error && (
-              <Text className="mb-2 text-sm text-destructive" testID="login-error">
-                {error}
-              </Text>
-            )}
-
-            <Pressable
-              className="mt-2 h-12 items-center justify-center rounded-xl bg-primary active:opacity-80"
-              onPress={onSubmit}
+              }
+              testID="login-password"
+            />
+            <HelperText type="error" visible={Boolean(error)} testID="login-error">
+              {error ?? ''}
+            </HelperText>
+            <Button
+              mode="contained"
+              onPress={() => void onSubmit()}
+              loading={submitting}
               disabled={submitting}
+              contentStyle={{ height: 48 }}
               testID="login-submit"
             >
-              {submitting ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text className="text-base font-semibold text-white">Sign in</Text>
-              )}
-            </Pressable>
+              Sign in
+            </Button>
           </View>
 
-          <Text className="mt-6 text-center text-xs text-muted">
+          <Text className="mt-6 text-center text-xs text-on-surface-variant dark:text-on-surface-variant-d">
             Forgot your password? Contact your community admin for a reset.
           </Text>
         </ScrollView>

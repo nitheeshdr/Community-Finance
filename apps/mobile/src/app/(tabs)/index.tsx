@@ -3,8 +3,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { PaymentStatus } from '@community-finance/shared';
+import { Logo } from '@/components/logo';
 import { useAuth } from '@/lib/auth-context';
-import { formatDate, initials, inr, periodLabel } from '@/lib/format';
+import { formatDate, inr, periodLabel } from '@/lib/format';
 import { useDashboard, useMyPayments, useUnreadCount } from '@/lib/queries';
 import {
   Card,
@@ -25,62 +26,66 @@ export default function HomeScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-surface dark:bg-surface-d" edges={['top']}>
       <ScrollView
         contentContainerClassName="px-4 pb-8"
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={() => void refetch()} />
         }
       >
-        {/* Header */}
+        {/* Top app bar */}
         <View className="mb-5 mt-2 flex-row items-center justify-between">
           <View className="flex-row items-center gap-3">
-            <View className="h-11 w-11 items-center justify-center rounded-full bg-primary">
-              <Text className="text-base font-bold text-white">
-                {user ? initials(user.name) : '…'}
-              </Text>
-            </View>
+            <Logo size={42} />
             <View>
-              <Text className="text-xs text-muted">Welcome back</Text>
-              <Text className="text-lg font-bold text-gray-900 dark:text-white">
+              <Text className="text-xs text-on-surface-variant dark:text-on-surface-variant-d">
+                Welcome back
+              </Text>
+              <Text className="text-lg font-bold text-on-surface dark:text-on-surface-d">
                 {user?.name.split(' ')[0]}
               </Text>
             </View>
           </View>
           <Link href="/more" asChild>
-            <Pressable className="h-10 w-10 items-center justify-center rounded-full bg-card dark:bg-card-dark">
-              <MaterialCommunityIcons name="bell-outline" size={20} color="#6b7280" />
+            <Pressable className="h-11 w-11 items-center justify-center rounded-full bg-surface-container dark:bg-surface-container-d">
+              <MaterialCommunityIcons name="bell-outline" size={20} color="#777680" />
               {(unread ?? 0) > 0 && (
-                <View className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full bg-destructive" />
+                <View className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-error dark:bg-error-d" />
               )}
             </Pressable>
           </Link>
         </View>
 
-        {/* Balance hero */}
-        <View className="rounded-3xl bg-primary p-5">
-          <Text className="text-xs font-medium uppercase tracking-wider text-indigo-200">
+        {/* Balance hero — M3 primary surface, 28dp radius */}
+        <View className="rounded-m3-xl bg-primary p-6 dark:bg-primary-container-d">
+          <Text className="text-xs font-medium uppercase tracking-wider text-primary-container dark:text-on-primary-container-d">
             Community balance
           </Text>
-          <Text className="mt-1 text-3xl font-bold text-white tabular-nums">
+          <Text className="mt-1 text-[34px] font-bold leading-10 text-on-primary tabular-nums dark:text-on-primary-container-d">
             {isLoading ? '…' : inr(stats?.currentBalance ?? 0)}
           </Text>
-          <View className="mt-4 flex-row gap-6">
+          <View className="mt-5 flex-row gap-6">
             <View>
-              <Text className="text-[11px] text-indigo-200">Collected this month</Text>
-              <Text className="text-sm font-semibold text-white tabular-nums">
+              <Text className="text-[11px] text-primary-container dark:text-on-primary-container-d">
+                Collected
+              </Text>
+              <Text className="text-sm font-semibold text-on-primary tabular-nums dark:text-on-primary-container-d">
                 {inr(stats?.monthlyCollection ?? 0)}
               </Text>
             </View>
             <View>
-              <Text className="text-[11px] text-indigo-200">Spent this month</Text>
-              <Text className="text-sm font-semibold text-white tabular-nums">
+              <Text className="text-[11px] text-primary-container dark:text-on-primary-container-d">
+                Spent
+              </Text>
+              <Text className="text-sm font-semibold text-on-primary tabular-nums dark:text-on-primary-container-d">
                 {inr(stats?.monthlyExpenses ?? 0)}
               </Text>
             </View>
             <View>
-              <Text className="text-[11px] text-indigo-200">Members paid</Text>
-              <Text className="text-sm font-semibold text-white tabular-nums">
+              <Text className="text-[11px] text-primary-container dark:text-on-primary-container-d">
+                Members paid
+              </Text>
+              <Text className="text-sm font-semibold text-on-primary tabular-nums dark:text-on-primary-container-d">
                 {stats?.paidMembersThisMonth ?? 0}/{stats?.activeMembers ?? 0}
               </Text>
             </View>
@@ -94,17 +99,17 @@ export default function HomeScreen() {
             {dues.map((p) => (
               <Card key={p.id} className="mb-2 flex-row items-center justify-between">
                 <View className="flex-1">
-                  <Text className="text-sm font-semibold text-gray-900 dark:text-white">
+                  <Text className="text-sm font-semibold text-on-surface dark:text-on-surface-d">
                     {p.type === 'SUBSCRIPTION'
                       ? `Subscription · ${periodLabel(p.period)}`
                       : (p.eventName ?? p.type.toLowerCase())}
                   </Text>
-                  <Text className="mt-0.5 text-xs text-muted">
+                  <Text className="mt-0.5 text-xs text-on-surface-variant dark:text-on-surface-variant-d">
                     Pay by cash/UPI to your admin, or use AutoPay
                   </Text>
                 </View>
                 <View className="items-end gap-1">
-                  <Text className="text-base font-bold text-gray-900 tabular-nums dark:text-white">
+                  <Text className="text-base font-bold text-on-surface tabular-nums dark:text-on-surface-d">
                     {inr(p.amount)}
                   </Text>
                   <StatusBadge status={p.status} />
@@ -146,7 +151,7 @@ export default function HomeScreen() {
           right={
             <Link href="/events" asChild>
               <Pressable>
-                <Text className="text-sm font-medium text-primary dark:text-primary-dark">
+                <Text className="text-sm font-semibold text-primary dark:text-primary-d">
                   See all
                 </Text>
               </Pressable>
@@ -168,20 +173,22 @@ export default function HomeScreen() {
             <Link key={e.id} href={{ pathname: '/events/[id]', params: { id: e.id } }} asChild>
               <Pressable>
                 <Card className="mb-2 flex-row items-center gap-3">
-                  <View className="h-11 w-11 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-950">
-                    <MaterialCommunityIcons name="calendar-star" size={20} color="#4f46e5" />
+                  <View className="h-12 w-12 items-center justify-center rounded-m3-md bg-primary-container dark:bg-primary-container-d">
+                    <MaterialCommunityIcons name="calendar-star" size={22} color="#4F46E5" />
                   </View>
                   <View className="flex-1">
-                    <Text className="text-sm font-semibold text-gray-900 dark:text-white">
+                    <Text className="text-sm font-semibold text-on-surface dark:text-on-surface-d">
                       {e.name}
                     </Text>
-                    <Text className="mt-0.5 text-xs text-muted">
+                    <Text className="mt-0.5 text-xs text-on-surface-variant dark:text-on-surface-variant-d">
                       {formatDate(e.date)} · Budget {inr(e.budget)}
                     </Text>
                   </View>
                   <View className="items-end">
-                    <Text className="text-xs text-muted">Your share</Text>
-                    <Text className="text-sm font-bold text-gray-900 tabular-nums dark:text-white">
+                    <Text className="text-xs text-on-surface-variant dark:text-on-surface-variant-d">
+                      Your share
+                    </Text>
+                    <Text className="text-sm font-bold text-on-surface tabular-nums dark:text-on-surface-d">
                       {inr(e.perHeadAmount)}
                     </Text>
                   </View>

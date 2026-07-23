@@ -12,7 +12,7 @@ export default function EventsScreen() {
   const events = data?.data ?? [];
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-surface dark:bg-surface-d" edges={['top']}>
       <FlatList
         data={events}
         keyExtractor={(e) => e.id}
@@ -22,10 +22,10 @@ export default function EventsScreen() {
         }
         ListHeaderComponent={
           <>
-            <Text className="mb-1 mt-2 text-xl font-bold text-gray-900 dark:text-white">
+            <Text className="mb-1 mt-2 text-xl font-bold text-on-surface dark:text-on-surface-d">
               Events
             </Text>
-            <Text className="mb-4 text-sm text-muted">
+            <Text className="mb-4 text-sm text-on-surface-variant dark:text-on-surface-variant-d">
               Every budget is split equally among active members
             </Text>
           </>
@@ -59,30 +59,30 @@ function EventCard({ event }: { event: EventDto }) {
         <Card>
           <View className="flex-row items-start justify-between">
             <View className="flex-1 pr-2">
-              <Text className="text-base font-semibold text-gray-900 dark:text-white">
+              <Text className="text-base font-semibold text-on-surface dark:text-on-surface-d">
                 {event.name}
               </Text>
-              <Text className="mt-0.5 text-xs text-muted">{formatDate(event.date)}</Text>
+              <Text className="mt-0.5 text-xs text-on-surface-variant dark:text-on-surface-variant-d">{formatDate(event.date)}</Text>
             </View>
             <StatusBadge status={event.status} />
           </View>
 
           <View className="mt-3 flex-row justify-between">
             <View>
-              <Text className="text-[11px] text-muted">Budget</Text>
-              <Text className="text-sm font-semibold text-gray-900 tabular-nums dark:text-white">
+              <Text className="text-[11px] text-on-surface-variant dark:text-on-surface-variant-d">Budget</Text>
+              <Text className="text-sm font-semibold text-on-surface tabular-nums dark:text-on-surface-d">
                 {inr(event.budget)}
               </Text>
             </View>
             <View>
-              <Text className="text-[11px] text-muted">Your share</Text>
-              <Text className="text-sm font-semibold text-gray-900 tabular-nums dark:text-white">
+              <Text className="text-[11px] text-on-surface-variant dark:text-on-surface-variant-d">Your share</Text>
+              <Text className="text-sm font-semibold text-on-surface tabular-nums dark:text-on-surface-d">
                 {inr(event.perHeadAmount)}
               </Text>
             </View>
             <View>
-              <Text className="text-[11px] text-muted">Collected</Text>
-              <Text className="text-sm font-semibold text-success tabular-nums">
+              <Text className="text-[11px] text-on-surface-variant dark:text-on-surface-variant-d">Collected</Text>
+              <Text className="text-sm font-semibold text-success dark:text-success-d tabular-nums">
                 {inr(event.collectedAmount)}
               </Text>
             </View>
@@ -90,16 +90,16 @@ function EventCard({ event }: { event: EventDto }) {
 
           <View className="mt-3">
             <View className="mb-1 flex-row justify-between">
-              <Text className="text-[11px] text-muted">Collection progress</Text>
-              <Text className="text-[11px] text-muted">{progress}%</Text>
+              <Text className="text-[11px] text-on-surface-variant dark:text-on-surface-variant-d">Collection progress</Text>
+              <Text className="text-[11px] text-on-surface-variant dark:text-on-surface-variant-d">{progress}%</Text>
             </View>
-            <View className="h-1.5 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800">
+            <View className="h-1.5 overflow-hidden rounded-full bg-surface-variant dark:bg-surface-variant-d">
               <View className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
             </View>
           </View>
 
           <View className="mt-2 flex-row items-center justify-end">
-            <Text className="text-xs font-medium text-primary dark:text-primary-dark">
+            <Text className="text-xs font-medium text-primary dark:text-primary-d">
               View details
             </Text>
             <MaterialCommunityIcons name="chevron-right" size={16} color="#4f46e5" />

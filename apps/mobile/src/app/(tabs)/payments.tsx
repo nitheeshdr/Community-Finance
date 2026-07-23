@@ -31,7 +31,7 @@ export default function PaymentsScreen() {
   const meta = data?.meta;
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-surface dark:bg-surface-d" edges={['top']}>
       <FlatList
         data={payments}
         keyExtractor={(p) => p.id}
@@ -41,14 +41,14 @@ export default function PaymentsScreen() {
         }
         ListHeaderComponent={
           <>
-            <Text className="mb-1 mt-2 text-xl font-bold text-gray-900 dark:text-white">
+            <Text className="mb-1 mt-2 text-xl font-bold text-on-surface dark:text-on-surface-d">
               Payments
             </Text>
-            <Text className="mb-4 text-sm text-muted">
+            <Text className="mb-4 text-sm text-on-surface-variant dark:text-on-surface-variant-d">
               Your subscription and contribution history
             </Text>
             <AutoPayCard />
-            <Text className="mb-2 mt-6 text-base font-semibold text-gray-900 dark:text-white">
+            <Text className="mb-2 mt-6 text-base font-semibold text-on-surface dark:text-on-surface-d">
               History
             </Text>
             {isLoading && <ActivityIndicator className="py-10" />}
@@ -72,19 +72,19 @@ export default function PaymentsScreen() {
               <Pressable
                 disabled={page <= 1}
                 onPress={() => setPage((p) => p - 1)}
-                className={`rounded-lg border border-border px-3 py-1.5 dark:border-border-dark ${page <= 1 ? 'opacity-40' : ''}`}
+                className={`rounded-m3-sm border border-outline-variant px-3 py-1.5 dark:border-outline-variant-d ${page <= 1 ? 'opacity-40' : ''}`}
               >
-                <Text className="text-sm text-gray-900 dark:text-white">Previous</Text>
+                <Text className="text-sm text-on-surface dark:text-on-surface-d">Previous</Text>
               </Pressable>
-              <Text className="text-xs text-muted">
+              <Text className="text-xs text-on-surface-variant dark:text-on-surface-variant-d">
                 {meta.page} / {meta.totalPages}
               </Text>
               <Pressable
                 disabled={page >= meta.totalPages}
                 onPress={() => setPage((p) => p + 1)}
-                className={`rounded-lg border border-border px-3 py-1.5 dark:border-border-dark ${page >= meta.totalPages ? 'opacity-40' : ''}`}
+                className={`rounded-m3-sm border border-outline-variant px-3 py-1.5 dark:border-outline-variant-d ${page >= meta.totalPages ? 'opacity-40' : ''}`}
               >
-                <Text className="text-sm text-gray-900 dark:text-white">Next</Text>
+                <Text className="text-sm text-on-surface dark:text-on-surface-d">Next</Text>
               </Pressable>
             </View>
           ) : null
@@ -105,18 +105,18 @@ function PaymentRow({ payment }: { payment: PaymentDto }) {
     <Card className="mb-2">
       <View className="flex-row items-center justify-between">
         <View className="flex-1 pr-3">
-          <Text className="text-sm font-semibold text-gray-900 dark:text-white">
+          <Text className="text-sm font-semibold text-on-surface dark:text-on-surface-d">
             {payment.type === 'SUBSCRIPTION'
               ? `Subscription · ${periodLabel(payment.period)}`
               : (payment.eventName ?? payment.type.replace(/_/g, ' ').toLowerCase())}
           </Text>
-          <Text className="mt-0.5 text-xs text-muted">
+          <Text className="mt-0.5 text-xs text-on-surface-variant dark:text-on-surface-variant-d">
             {formatDate(payment.paidAt ?? payment.createdAt)} ·{' '}
             {payment.method.toLowerCase()}
           </Text>
         </View>
         <View className="items-end gap-1">
-          <Text className="text-base font-bold text-gray-900 tabular-nums dark:text-white">
+          <Text className="text-base font-bold text-on-surface tabular-nums dark:text-on-surface-d">
             {inr(payment.amount)}
           </Text>
           <StatusBadge status={payment.status} />
@@ -125,10 +125,10 @@ function PaymentRow({ payment }: { payment: PaymentDto }) {
       {payment.receiptNumber && (
         <Pressable
           onPress={() => void openReceipt()}
-          className="mt-3 flex-row items-center gap-1.5 self-start rounded-lg bg-indigo-50 px-2.5 py-1.5 active:opacity-70 dark:bg-indigo-950"
+          className="mt-3 flex-row items-center gap-1.5 self-start rounded-m3-sm bg-primary-container px-2.5 py-1.5 active:opacity-70 dark:bg-primary-container-d"
         >
           <MaterialCommunityIcons name="file-download-outline" size={14} color="#4f46e5" />
-          <Text className="text-xs font-semibold text-primary dark:text-primary-dark">
+          <Text className="text-xs font-semibold text-primary dark:text-primary-d">
             Receipt {payment.receiptNumber}
           </Text>
         </Pressable>
@@ -168,14 +168,14 @@ function AutoPayCard() {
   return (
     <Card>
       <View className="flex-row items-center gap-3">
-        <View className="h-11 w-11 items-center justify-center rounded-xl bg-indigo-100 dark:bg-indigo-950">
+        <View className="h-11 w-11 items-center justify-center rounded-m3-md bg-primary-container dark:bg-primary-container-d">
           <MaterialCommunityIcons name="autorenew" size={22} color="#4f46e5" />
         </View>
         <View className="flex-1">
-          <Text className="text-sm font-semibold text-gray-900 dark:text-white">
+          <Text className="text-sm font-semibold text-on-surface dark:text-on-surface-d">
             AutoPay subscription
           </Text>
-          <Text className="mt-0.5 text-xs text-muted">
+          <Text className="mt-0.5 text-xs text-on-surface-variant dark:text-on-surface-variant-d">
             {isLoading
               ? 'Checking…'
               : live
@@ -189,14 +189,14 @@ function AutoPayCard() {
           <StatusBadge status="ACTIVE" />
         ) : subscription?.shortUrl ? (
           <Pressable
-            className="rounded-lg bg-primary px-3 py-2 active:opacity-80"
+            className="rounded-m3-sm bg-primary px-3 py-2 active:opacity-80"
             onPress={() => void WebBrowser.openBrowserAsync(subscription.shortUrl!)}
           >
             <Text className="text-xs font-semibold text-white">Authorize</Text>
           </Pressable>
         ) : (
           <Pressable
-            className="rounded-lg bg-primary px-3 py-2 active:opacity-80"
+            className="rounded-m3-sm bg-primary px-3 py-2 active:opacity-80"
             disabled={createMutation.isPending}
             onPress={() => createMutation.mutate()}
           >
@@ -208,7 +208,7 @@ function AutoPayCard() {
           </Pressable>
         )}
       </View>
-      {error && <Text className="mt-2 text-xs text-destructive">{error}</Text>}
+      {error && <Text className="mt-2 text-xs text-error dark:text-error-d">{error}</Text>}
     </Card>
   );
 }

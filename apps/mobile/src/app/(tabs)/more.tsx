@@ -41,7 +41,7 @@ export default function MoreScreen() {
   });
 
   return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark" edges={['top']}>
+    <SafeAreaView className="flex-1 bg-surface dark:bg-surface-d" edges={['top']}>
       <ScrollView
         contentContainerClassName="px-4 pb-10"
         refreshControl={
@@ -56,8 +56,8 @@ export default function MoreScreen() {
             </Text>
           </View>
           <View>
-            <Text className="text-lg font-bold text-gray-900 dark:text-white">{user?.name}</Text>
-            <Text className="text-sm text-muted">
+            <Text className="text-lg font-bold text-on-surface dark:text-on-surface-d">{user?.name}</Text>
+            <Text className="text-sm text-on-surface-variant dark:text-on-surface-variant-d">
               {user?.phone} · {user?.role.replace('_', ' ').toLowerCase()}
             </Text>
           </View>
@@ -68,7 +68,7 @@ export default function MoreScreen() {
           right={
             notifications.some((n) => !n.read) ? (
               <Pressable onPress={() => markAllRead.mutate()}>
-                <Text className="text-sm font-medium text-primary dark:text-primary-dark">
+                <Text className="text-sm font-medium text-primary dark:text-primary-d">
                   Mark all read
                 </Text>
               </Pressable>
@@ -129,7 +129,7 @@ export default function MoreScreen() {
           />
         </Card>
 
-        <Text className="mt-6 text-center text-xs text-muted">
+        <Text className="mt-6 text-center text-xs text-on-surface-variant dark:text-on-surface-variant-d">
           Community Finance · transparent by design
         </Text>
       </ScrollView>
@@ -157,7 +157,7 @@ function NotificationRow({
 
   return (
     <View
-      className={`flex-row gap-3 py-3 ${!first ? 'border-t border-border dark:border-border-dark' : ''}`}
+      className={`flex-row gap-3 py-3 ${!first ? 'border-t border-outline-variant dark:border-outline-variant-d' : ''}`}
     >
       <MaterialCommunityIcons
         name={icon}
@@ -167,14 +167,14 @@ function NotificationRow({
       />
       <View className="flex-1">
         <Text
-          className={`text-sm ${notification.read ? 'text-gray-600 dark:text-gray-400' : 'font-semibold text-gray-900 dark:text-white'}`}
+          className={`text-sm ${notification.read ? 'text-on-surface-variant dark:text-on-surface-variant-d' : 'font-semibold text-on-surface dark:text-on-surface-d'}`}
         >
           {notification.title}
         </Text>
-        <Text className="mt-0.5 text-xs text-muted" numberOfLines={2}>
+        <Text className="mt-0.5 text-xs text-on-surface-variant dark:text-on-surface-variant-d" numberOfLines={2}>
           {notification.body}
         </Text>
-        <Text className="mt-1 text-[11px] text-muted">
+        <Text className="mt-1 text-[11px] text-on-surface-variant dark:text-on-surface-variant-d">
           {formatDateTime(notification.createdAt)}
         </Text>
       </View>
@@ -197,11 +197,11 @@ function ActionRow({
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center gap-3 border-b border-border py-3.5 last:border-b-0 active:opacity-60 dark:border-border-dark"
+      className="flex-row items-center gap-3 border-b border-outline-variant py-3.5 last:border-b-0 active:opacity-60 dark:border-outline-variant-d"
     >
       <MaterialCommunityIcons name={icon} size={20} color={destructive ? '#dc2626' : '#6b7280'} />
       <Text
-        className={`flex-1 text-sm font-medium ${destructive ? 'text-destructive' : 'text-gray-900 dark:text-white'}`}
+        className={`flex-1 text-sm font-medium ${destructive ? 'text-error dark:text-error-d' : 'text-on-surface dark:text-on-surface-d'}`}
       >
         {label}
       </Text>
@@ -235,10 +235,10 @@ function ChangePasswordForm({ onDone }: { onDone: () => void }) {
   });
 
   const inputClass =
-    'mb-2 h-11 rounded-xl border border-border bg-background px-3 text-sm text-gray-900 dark:border-border-dark dark:bg-background-dark dark:text-white';
+    'mb-2 h-11 rounded-m3-md border border-outline-variant bg-surface-lowest px-3 text-sm text-on-surface dark:border-outline-variant-d dark:bg-surface-lowest-d dark:text-on-surface-d';
 
   return (
-    <View className="border-b border-border pb-4 pt-1 dark:border-border-dark">
+    <View className="border-b border-outline-variant pb-4 pt-1 dark:border-outline-variant-d">
       <TextInput
         className={inputClass}
         placeholder="Current password"
@@ -263,9 +263,9 @@ function ChangePasswordForm({ onDone }: { onDone: () => void }) {
         value={confirm}
         onChangeText={setConfirm}
       />
-      {error && <Text className="mb-2 text-xs text-destructive">{error}</Text>}
+      {error && <Text className="mb-2 text-xs text-error dark:text-error-d">{error}</Text>}
       <Pressable
-        className="h-11 items-center justify-center rounded-xl bg-primary active:opacity-80"
+        className="h-11 items-center justify-center rounded-m3-md bg-primary active:opacity-80"
         disabled={mutation.isPending || !current || !next || next !== confirm}
         onPress={() => mutation.mutate()}
       >
