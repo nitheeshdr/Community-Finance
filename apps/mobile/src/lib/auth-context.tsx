@@ -11,6 +11,7 @@ import type { AuthUserDto, LoginResponseDto } from '@community-finance/shared';
 import {
   api,
   clearTokens,
+  getRefreshToken,
   refreshAccessToken,
   saveRefreshToken,
   setAccessToken,
@@ -71,7 +72,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      const { getRefreshToken } = await import('./api');
       const token = await getRefreshToken();
       if (token) await api.post('/auth/logout', { refreshToken: token });
     } catch {

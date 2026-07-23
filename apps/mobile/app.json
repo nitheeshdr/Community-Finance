@@ -35,15 +35,18 @@
           "imageWidth": 120
         }
       ],
-      "expo-secure-store",
-      "expo-web-browser"
+      "expo-secure-store"
     ],
     "experiments": {
-      "typedRoutes": true,
-      "reactCompiler": true
+      "typedRoutes": true
     },
     "extra": {
-      "apiUrl": "https://finance-village-web.vercel.app"
-    }
+      "apiUrl": "https://finance-village-web.vercel.app",
+      "router": {},
+      "eas": {
+        "projectId": "583178c9-c233-400f-abb2-d9bc5ed12e63"
+      }
+    },
+    "owner": "nitheeshdr"
   }
 }
