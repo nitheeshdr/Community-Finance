@@ -20,6 +20,7 @@ import {
 import { api, apiErrorMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { formatDate, inr, periodLabel } from '@/lib/format';
+import { payPendingPayment } from '@/lib/pay';
 import { useMyPayments, useMySubscription } from '@/lib/queries';
 import { Card, EmptyState, StatusBadge } from '@/components/ui';
 
@@ -95,9 +96,25 @@ export default function PaymentsScreen() {
 }
 
 function PaymentRow({ payment }: { payment: PaymentDto }) {
+  const qc = useQueryClient();
+  const [paying, setPaying] = useState(false);
+  const payable =
+    payment.status === 'PENDING' ||
+    payment.status === 'OVERDUE' ||
+    payment.status === 'FAILED';
+
   async function openReceipt() {
     if (payment.receiptUrl) {
       await WebBrowser.openBrowserAsync(payment.receiptUrl);
+    }
+  }
+
+  async function pay() {
+    setPaying(true);
+    try {
+      await payPendingPayment(payment.id, qc);
+    } finally {
+      setPaying(false);
     }
   }
 
@@ -122,6 +139,26 @@ function PaymentRow({ payment }: { payment: PaymentDto }) {
           <StatusBadge status={payment.status} />
         </View>
       </View>
+
+      {payable && (
+        <Pressable
+          onPress={() => void pay()}
+          disabled={paying}
+          className="mt-3 h-10 flex-row items-center justify-center gap-2 rounded-m3-md bg-primary active:opacity-80 dark:bg-primary-d"
+        >
+          {paying ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <>
+              <MaterialCommunityIcons name="cash-fast" size={15} color="#fff" />
+              <Text className="text-sm font-semibold text-on-primary dark:text-on-primary-container">
+                Pay {inr(payment.amount)} now
+              </Text>
+            </>
+          )}
+        </Pressable>
+      )}
+
       {payment.receiptNumber && (
         <Pressable
           onPress={() => void openReceipt()}
@@ -179,10 +216,10 @@ function AutoPayCard() {
             {isLoading
               ? 'Checking…'
               : live
-                ? `Active — next charge ${formatDate(subscription?.nextChargeAt)}`
+                ? `Active — next charge ${formatDate(subscription?.nextChargeAt)}. You can still pay a due manually above.`
                 : subscription
                   ? `Status: ${subscription.status.toLowerCase()}`
-                  : 'Pay your monthly fee automatically via UPI'}
+                  : 'Auto-charge your monthly fee via UPI, or pay each due manually above'}
           </Text>
         </View>
         {live ? (

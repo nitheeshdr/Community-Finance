@@ -1,18 +1,12 @@
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
-import {
-  EventFundingMode,
-  PaymentStatus,
-  type ApiSuccess,
-  type EventPayLinkDto,
-} from '@community-finance/shared';
+import { EventFundingMode, PaymentStatus } from '@community-finance/shared';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
-import { api, apiErrorMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { formatDate, inr } from '@/lib/format';
+import { payEventShare } from '@/lib/pay';
 import { useEvent, useEventSplits } from '@/lib/queries';
 import { Card, Row, SectionTitle, StatusBadge } from '@/components/ui';
 
@@ -31,13 +25,7 @@ export default function EventDetailScreen() {
   async function payNow() {
     setPaying(true);
     try {
-      const res = await api.post<ApiSuccess<EventPayLinkDto>>(`/events/${id}/pay`);
-      const link = res.data.data;
-      await WebBrowser.openBrowserAsync(link.shortUrl);
-      // Refresh splits when the user returns — webhook may have settled it.
-      await qc.invalidateQueries({ queryKey: ['events', 'splits', id] });
-    } catch (err) {
-      Alert.alert('Payment', apiErrorMessage(err));
+      await payEventShare(id, qc);
     } finally {
       setPaying(false);
     }

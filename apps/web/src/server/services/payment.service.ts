@@ -18,6 +18,7 @@ import {
 import {
   BusinessRuleError,
   ConflictError,
+  ForbiddenError,
   NotFoundError,
 } from '../errors/app-error';
 import { uploadBuffer } from '../lib/cloudinary';
@@ -231,10 +232,6 @@ export class PaymentService {
       };
     }
 
-    const member = (await this.users.findById(communityId, memberId)) as UserEntity | null;
-    const { getRazorpayClient } = await import('../lib/razorpay');
-    const client = await getRazorpayClient(communityId);
-
     const payment = (await this.payments.create(communityId, {
       memberId,
       type: PaymentType.EVENT_CONTRIBUTION,
@@ -244,10 +241,70 @@ export class PaymentService {
       eventId,
     } as never)) as PaymentEntity;
 
+    return this.attachPayLink(communityId, payment, `${event.name} — contribution`);
+  }
+
+  /**
+   * "Pay now" for an existing pending payment (monthly subscription due,
+   * a pending event contribution, etc.). Members may pay any of their own
+   * PENDING/OVERDUE dues one-time via Razorpay even if they also have
+   * AutoPay — this covers the current period or a failed AutoPay charge.
+   */
+  async payPendingPayment(
+    communityId: string,
+    paymentId: string,
+    memberId: string
+  ): Promise<{ paymentId: string; shortUrl: string; amount: number }> {
+    const payment = await this.getById(communityId, paymentId);
+    if (String(payment.memberId) !== memberId) {
+      throw new ForbiddenError('You can only pay your own dues');
+    }
+    if (
+      payment.status !== PaymentStatus.PENDING &&
+      payment.status !== PaymentStatus.OVERDUE &&
+      payment.status !== PaymentStatus.FAILED
+    ) {
+      throw new BusinessRuleError('This payment is not pending');
+    }
+
+    // Reuse the live link if we already generated one for this amount.
+    if (payment.razorpayLinkUrl && payment.razorpayLinkId) {
+      return {
+        paymentId: String(payment._id),
+        shortUrl: payment.razorpayLinkUrl,
+        amount: payment.amount,
+      };
+    }
+
+    // A cash/UPI-provisional row becomes a Razorpay row when paid online.
+    if (payment.method !== PaymentMethod.RAZORPAY) {
+      await this.payments.updateById(communityId, paymentId, {
+        $set: { method: PaymentMethod.RAZORPAY },
+      });
+      payment.method = PaymentMethod.RAZORPAY;
+    }
+
+    const label =
+      payment.type === PaymentType.SUBSCRIPTION
+        ? `Monthly subscription ${payment.period ?? ''}`.trim()
+        : `${humanize(payment.type)} contribution`;
+    return this.attachPayLink(communityId, payment, label);
+  }
+
+  /** Create a Razorpay Payment Link for a payment row and persist it. */
+  private async attachPayLink(
+    communityId: string,
+    payment: PaymentEntity,
+    description: string
+  ): Promise<{ paymentId: string; shortUrl: string; amount: number }> {
+    const member = (await this.users.findById(communityId, String(payment.memberId))) as UserEntity | null;
+    const { getRazorpayClient } = await import('../lib/razorpay');
+    const client = await getRazorpayClient(communityId);
+
     const link = (await client.paymentLink.create({
-      amount: remaining,
+      amount: payment.amount,
       currency: 'INR',
-      description: `${event.name} — contribution`,
+      description,
       customer: {
         name: member?.name,
         contact: member?.phone ? `+91${member.phone}` : undefined,
@@ -256,8 +313,8 @@ export class PaymentService {
       notes: {
         communityId,
         paymentId: String(payment._id),
-        eventId,
-        memberId,
+        memberId: String(payment.memberId),
+        ...(payment.eventId ? { eventId: String(payment.eventId) } : {}),
       },
     })) as { id: string; short_url: string };
 
@@ -265,7 +322,7 @@ export class PaymentService {
       $set: { razorpayLinkId: link.id, razorpayLinkUrl: link.short_url },
     });
 
-    return { paymentId: String(payment._id), shortUrl: link.short_url, amount: remaining };
+    return { paymentId: String(payment._id), shortUrl: link.short_url, amount: payment.amount };
   }
 
   /* ------------------------------------------------------------ */

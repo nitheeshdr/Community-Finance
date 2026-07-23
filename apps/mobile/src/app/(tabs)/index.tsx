@@ -1,11 +1,21 @@
-import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
+import { useState } from 'react';
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { PaymentStatus } from '@community-finance/shared';
+import { useQueryClient } from '@tanstack/react-query';
+import { PaymentStatus, type PaymentDto } from '@community-finance/shared';
 import { Logo } from '@/components/logo';
 import { useAuth } from '@/lib/auth-context';
 import { formatDate, inr, periodLabel } from '@/lib/format';
+import { payPendingPayment } from '@/lib/pay';
 import { useDashboard, useMyPayments, useUnreadCount } from '@/lib/queries';
 import {
   Card,
@@ -103,27 +113,7 @@ export default function HomeScreen() {
           <>
             <SectionTitle>My dues</SectionTitle>
             {dues.map((p) => (
-              <View
-                key={p.id}
-                className="mb-2 flex-row items-center justify-between rounded-m3-lg bg-primary-container p-4 dark:bg-primary-container-d"
-              >
-                <View className="flex-1 pr-2">
-                  <Text className="text-sm font-semibold text-on-primary-container dark:text-on-primary-container-d">
-                    {p.type === 'SUBSCRIPTION'
-                      ? `Subscription · ${periodLabel(p.period)}`
-                      : (p.eventName ?? p.type.toLowerCase())}
-                  </Text>
-                  <Text className="mt-0.5 text-xs text-on-primary-container/80 dark:text-on-primary-container-d/80">
-                    Pay by cash/UPI to your admin, or use AutoPay
-                  </Text>
-                </View>
-                <View className="items-end gap-1">
-                  <Text className="text-base font-bold text-on-primary-container tabular-nums dark:text-on-primary-container-d">
-                    {inr(p.amount)}
-                  </Text>
-                  <StatusBadge status={p.status} />
-                </View>
-              </View>
+              <DueCard key={p.id} payment={p} />
             ))}
           </>
         )}
@@ -213,6 +203,60 @@ export default function HomeScreen() {
         )}
       </ScrollView>
     </SafeAreaView>
+  );
+}
+
+/** A pending due with a one-time "Pay now" button (works with AutoPay). */
+function DueCard({ payment }: { payment: PaymentDto }) {
+  const qc = useQueryClient();
+  const [paying, setPaying] = useState(false);
+
+  async function pay() {
+    setPaying(true);
+    try {
+      await payPendingPayment(payment.id, qc);
+    } finally {
+      setPaying(false);
+    }
+  }
+
+  return (
+    <View className="mb-2 rounded-m3-lg bg-primary-container p-4 dark:bg-primary-container-d">
+      <View className="flex-row items-center justify-between">
+        <View className="flex-1 pr-2">
+          <Text className="text-sm font-semibold text-on-primary-container dark:text-on-primary-container-d">
+            {payment.type === 'SUBSCRIPTION'
+              ? `Subscription · ${periodLabel(payment.period)}`
+              : (payment.eventName ?? payment.type.toLowerCase())}
+          </Text>
+          <Text className="mt-0.5 text-xs text-on-primary-container/80 dark:text-on-primary-container-d/80">
+            Pay online now, or by cash/UPI to your admin
+          </Text>
+        </View>
+        <View className="items-end gap-1">
+          <Text className="text-base font-bold text-on-primary-container tabular-nums dark:text-on-primary-container-d">
+            {inr(payment.amount)}
+          </Text>
+          <StatusBadge status={payment.status} />
+        </View>
+      </View>
+      <Pressable
+        onPress={() => void pay()}
+        disabled={paying}
+        className="mt-3 h-11 flex-row items-center justify-center gap-2 rounded-m3-md bg-primary active:opacity-80 dark:bg-primary-d"
+      >
+        {paying ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <>
+            <MaterialCommunityIcons name="cash-fast" size={16} color="#fff" />
+            <Text className="text-sm font-semibold text-on-primary dark:text-on-primary-container">
+              Pay {inr(payment.amount)} now
+            </Text>
+          </>
+        )}
+      </Pressable>
+    </View>
   );
 }
 
