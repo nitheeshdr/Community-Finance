@@ -62,13 +62,13 @@ export function Header({ onOpenSearch }: { onOpenSearch?: () => void }) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <a href="/settings/profile">
+              <a href="/settings?tab=account">
                 <User />
                 Profile
               </a>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <a href="/settings/sessions">
+              <a href="/settings?tab=sessions">
                 <MonitorSmartphone />
                 Devices &amp; sessions
               </a>

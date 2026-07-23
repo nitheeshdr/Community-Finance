@@ -15,6 +15,8 @@ import { API_PREFIX, type ApiFailure } from '@community-finance/shared';
  *   EXPO_PUBLIC_API_URL env → app.json extra.apiUrl → production URL.
  */
 const REFRESH_KEY = 'cf_refresh_token';
+const USER_KEY = 'cf_user';
+const LAST_PHONE_KEY = 'cf_last_phone';
 
 const baseHost =
   process.env.EXPO_PUBLIC_API_URL ??
@@ -45,6 +47,32 @@ export async function getRefreshToken(): Promise<string | null> {
 export async function clearTokens(): Promise<void> {
   accessToken = null;
   await SecureStore.deleteItemAsync(REFRESH_KEY);
+  await SecureStore.deleteItemAsync(USER_KEY);
+}
+
+/* ── Local session cache: instant sign-in on app start ─────────────── */
+
+export async function saveCachedUser(user: unknown): Promise<void> {
+  await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
+}
+
+export async function getCachedUser<T>(): Promise<T | null> {
+  const raw = await SecureStore.getItemAsync(USER_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return null;
+  }
+}
+
+/** Remember the last phone number for login prefill. */
+export async function saveLastPhone(phone: string): Promise<void> {
+  await SecureStore.setItemAsync(LAST_PHONE_KEY, phone);
+}
+
+export async function getLastPhone(): Promise<string | null> {
+  return SecureStore.getItemAsync(LAST_PHONE_KEY);
 }
 
 export const api = axios.create({
@@ -72,8 +100,13 @@ export async function refreshAccessToken(): Promise<string | null> {
       accessToken = data.accessToken;
       await saveRefreshToken(data.refreshToken); // rotation
       return accessToken;
-    } catch {
-      await clearTokens();
+    } catch (err) {
+      // Only a definitive server rejection ends the session — network
+      // failures keep the cached login so the app works offline-ish.
+      const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+      if (status === 401 || status === 403) {
+        await clearTokens();
+      }
       return null;
     } finally {
       refreshPromise = null;

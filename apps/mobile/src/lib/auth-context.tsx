@@ -11,8 +11,11 @@ import type { AuthUserDto, LoginResponseDto } from '@community-finance/shared';
 import {
   api,
   clearTokens,
+  getCachedUser,
   getRefreshToken,
   refreshAccessToken,
+  saveCachedUser,
+  saveLastPhone,
   saveRefreshToken,
   setAccessToken,
   setUnauthorizedHandler,
@@ -33,18 +36,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUserDto | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Silent session restore from the stored refresh token.
+  // Instant restore: locally-saved login opens the app signed-in
+  // immediately; the token refresh then revalidates in the background.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
+        const [cached, storedToken] = await Promise.all([
+          getCachedUser<AuthUserDto>(),
+          getRefreshToken(),
+        ]);
+        if (cached && storedToken && !cancelled) {
+          setUser(cached); // signed in instantly from local storage
+          setLoading(false);
+        }
+
         const token = await refreshAccessToken();
-        if (token && !cancelled) {
+        if (cancelled) return;
+        if (token) {
           const res = await api.get<{ data: AuthUserDto }>('/auth/me');
-          if (!cancelled) setUser(res.data.data);
+          if (!cancelled) {
+            setUser(res.data.data);
+            await saveCachedUser(res.data.data);
+          }
+        } else if (!(await getRefreshToken())) {
+          // Server explicitly rejected the session — sign out.
+          if (!cancelled) setUser(null);
         }
       } catch {
-        // stay logged out
+        // Network problems keep the cached session; nothing to do.
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -66,6 +86,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const data = res.data.data;
     setAccessToken(data.accessToken);
     await saveRefreshToken(data.refreshToken);
+    await saveCachedUser(data.user);
+    await saveLastPhone(phone);
     setUser(data.user);
     return data.user;
   }, []);
@@ -85,6 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const refreshUser = useCallback(async () => {
     const res = await api.get<{ data: AuthUserDto }>('/auth/me');
     setUser(res.data.data);
+    await saveCachedUser(res.data.data);
   }, []);
 
   const value = useMemo(

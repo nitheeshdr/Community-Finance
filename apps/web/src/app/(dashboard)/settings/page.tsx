@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { KeyRound, LogOut, MonitorSmartphone, Plus, X } from 'lucide-react';
@@ -33,14 +34,30 @@ interface SettingsData {
   language: string;
 }
 
+const VALID_TABS = ['fees', 'payments', 'categories', 'account', 'sessions'];
+
 export default function SettingsPage() {
+  return (
+    <Suspense>
+      <SettingsContent />
+    </Suspense>
+  );
+}
+
+function SettingsContent() {
   const { user } = useAuth();
   const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
+  const searchParams = useSearchParams();
+
+  // Deep-linkable tabs: /settings?tab=sessions etc.
+  const requested = searchParams.get('tab');
+  const defaultTab =
+    requested && VALID_TABS.includes(requested) ? requested : isSuperAdmin ? 'fees' : 'account';
 
   return (
     <div>
       <PageHeader title="Settings" description="Community configuration and your account" />
-      <Tabs defaultValue={isSuperAdmin ? 'fees' : 'account'}>
+      <Tabs defaultValue={defaultTab}>
         <TabsList>
           {isSuperAdmin && <TabsTrigger value="fees">Monthly fee</TabsTrigger>}
           {isSuperAdmin && <TabsTrigger value="payments">Razorpay</TabsTrigger>}

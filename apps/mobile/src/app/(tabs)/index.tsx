@@ -105,20 +105,20 @@ export default function HomeScreen() {
             {dues.map((p) => (
               <View
                 key={p.id}
-                className="mb-2 flex-row items-center justify-between rounded-m3-lg bg-warning-container p-4 dark:bg-warning-container-d"
+                className="mb-2 flex-row items-center justify-between rounded-m3-lg bg-primary-container p-4 dark:bg-primary-container-d"
               >
                 <View className="flex-1 pr-2">
-                  <Text className="text-sm font-semibold text-on-warning-container dark:text-on-warning-container-d">
+                  <Text className="text-sm font-semibold text-on-primary-container dark:text-on-primary-container-d">
                     {p.type === 'SUBSCRIPTION'
                       ? `Subscription · ${periodLabel(p.period)}`
                       : (p.eventName ?? p.type.toLowerCase())}
                   </Text>
-                  <Text className="mt-0.5 text-xs text-on-warning-container/80 dark:text-on-warning-container-d/80">
+                  <Text className="mt-0.5 text-xs text-on-primary-container/80 dark:text-on-primary-container-d/80">
                     Pay by cash/UPI to your admin, or use AutoPay
                   </Text>
                 </View>
                 <View className="items-end gap-1">
-                  <Text className="text-base font-bold text-on-warning-container tabular-nums dark:text-on-warning-container-d">
+                  <Text className="text-base font-bold text-on-primary-container tabular-nums dark:text-on-primary-container-d">
                     {inr(p.amount)}
                   </Text>
                   <StatusBadge status={p.status} />
@@ -128,7 +128,7 @@ export default function HomeScreen() {
           </>
         )}
 
-        {/* Community overview — tonal M3 grid */}
+        {/* Community overview — uniform brand-tint grid */}
         <SectionTitle>Community overview</SectionTitle>
         <View className="flex-row gap-3">
           <StatCard
@@ -138,7 +138,7 @@ export default function HomeScreen() {
             value={inr(stats?.pendingCollection ?? 0)}
           />
           <StatCard
-            tone="secondary"
+            tone="primary"
             icon="account-group"
             label="Active members"
             value={String(stats?.activeMembers ?? 0)}
@@ -147,13 +147,13 @@ export default function HomeScreen() {
         </View>
         <View className="mt-3 flex-row gap-3">
           <StatCard
-            tone="tertiary"
+            tone="primary"
             icon={monthUp ? 'trending-up' : 'trending-down'}
             label="This month vs last"
             value={`${monthUp ? '+' : ''}${stats?.monthlyComparison.changePercent ?? 0}%`}
           />
           <StatCard
-            tone={(stats?.failedPaymentsThisMonth ?? 0) > 0 ? 'error' : 'surface'}
+            tone="primary"
             icon="alert-circle-outline"
             label="Failed payments"
             value={String(stats?.failedPaymentsThisMonth ?? 0)}

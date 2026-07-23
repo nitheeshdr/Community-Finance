@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -11,7 +11,7 @@ import { Button, HelperText, TextInput } from 'react-native-paper';
 import { useRouter } from 'expo-router';
 import { PHONE_REGEX } from '@community-finance/shared';
 import { Logo } from '@/components/logo';
-import { apiErrorMessage } from '@/lib/api';
+import { apiErrorMessage, getLastPhone } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
 export default function LoginScreen() {
@@ -22,6 +22,13 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  // Prefill the last phone number used on this device.
+  useEffect(() => {
+    void getLastPhone().then((saved) => {
+      if (saved) setPhone((current) => current || saved);
+    });
+  }, []);
 
   async function onSubmit() {
     setError(null);
