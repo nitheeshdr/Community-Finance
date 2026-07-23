@@ -19,38 +19,73 @@ export function Card({ children, className, ...props }: ViewProps & { className?
   );
 }
 
-/** Elevated-tonal stat tile. */
+/** M3 tonal stat tile — each tone maps to a container/on-container pair. */
+const STAT_TONES = {
+  surface: {
+    bg: 'bg-surface-container dark:bg-surface-container-d',
+    label: 'text-on-surface-variant dark:text-on-surface-variant-d',
+    value: 'text-on-surface dark:text-on-surface-d',
+    icon: 'bg-surface-high dark:bg-surface-high-d',
+  },
+  primary: {
+    bg: 'bg-primary-container dark:bg-primary-container-d',
+    label: 'text-on-primary-container/80 dark:text-on-primary-container-d/80',
+    value: 'text-on-primary-container dark:text-on-primary-container-d',
+    icon: 'bg-surface-lowest/50 dark:bg-surface-lowest-d/30',
+  },
+  secondary: {
+    bg: 'bg-secondary-container dark:bg-secondary-container-d',
+    label: 'text-on-secondary-container/80 dark:text-on-secondary-container-d/80',
+    value: 'text-on-secondary-container dark:text-on-secondary-container-d',
+    icon: 'bg-surface-lowest/50 dark:bg-surface-lowest-d/30',
+  },
+  tertiary: {
+    bg: 'bg-tertiary-container dark:bg-tertiary-container-d',
+    label: 'text-on-tertiary-container/80 dark:text-on-tertiary-container-d/80',
+    value: 'text-on-tertiary-container dark:text-on-tertiary-container-d',
+    icon: 'bg-surface-lowest/50 dark:bg-surface-lowest-d/30',
+  },
+  warning: {
+    bg: 'bg-warning-container dark:bg-warning-container-d',
+    label: 'text-on-warning-container/80 dark:text-on-warning-container-d/80',
+    value: 'text-on-warning-container dark:text-on-warning-container-d',
+    icon: 'bg-surface-lowest/50 dark:bg-surface-lowest-d/30',
+  },
+  error: {
+    bg: 'bg-error-container dark:bg-error-container-d',
+    label: 'text-on-error-container/80 dark:text-on-error-container-d/80',
+    value: 'text-on-error-container dark:text-on-error-container-d',
+    icon: 'bg-surface-lowest/50 dark:bg-surface-lowest-d/30',
+  },
+} as const;
+
+export type StatTone = keyof typeof STAT_TONES;
+
 export function StatCard({
   label,
   value,
   sub,
-  accent,
+  tone = 'surface',
+  icon,
 }: {
   label: string;
   value: string;
   sub?: string;
-  accent?: 'success' | 'destructive' | 'warning';
+  tone?: StatTone;
+  icon?: keyof typeof MaterialCommunityIcons.glyphMap;
 }) {
-  const accentClass =
-    accent === 'success'
-      ? 'text-success dark:text-success-d'
-      : accent === 'destructive'
-        ? 'text-error dark:text-error-d'
-        : accent === 'warning'
-          ? 'text-warning dark:text-warning-d'
-          : 'text-on-surface dark:text-on-surface-d';
+  const t = STAT_TONES[tone];
   return (
-    <Card className="flex-1">
-      <Text className="text-[11px] font-medium uppercase tracking-wide text-on-surface-variant dark:text-on-surface-variant-d">
-        {label}
-      </Text>
-      <Text className={`mt-1 text-lg font-bold tabular-nums ${accentClass}`}>{value}</Text>
-      {sub ? (
-        <Text className="mt-0.5 text-xs text-on-surface-variant dark:text-on-surface-variant-d">
-          {sub}
-        </Text>
+    <View className={`flex-1 rounded-m3-lg p-4 ${t.bg}`}>
+      {icon ? (
+        <View className={`mb-2 h-8 w-8 items-center justify-center rounded-full ${t.icon}`}>
+          <MaterialCommunityIcons name={icon} size={16} color="#46464F" />
+        </View>
       ) : null}
-    </Card>
+      <Text className={`text-[11px] font-medium uppercase tracking-wide ${t.label}`}>{label}</Text>
+      <Text className={`mt-1 text-lg font-bold tabular-nums ${t.value}`}>{value}</Text>
+      {sub ? <Text className={`mt-0.5 text-xs ${t.label}`}>{sub}</Text> : null}
+    </View>
   );
 }
 

@@ -56,6 +56,17 @@ function RootNavigator() {
             headerShadowVisible: false,
           }}
         />
+        <Stack.Screen
+          name="notifications"
+          options={{
+            headerShown: true,
+            title: 'Notifications',
+            headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: scheme.surface },
+            headerTintColor: scheme.onSurface,
+            headerShadowVisible: false,
+          }}
+        />
       </Stack>
     </>
   );

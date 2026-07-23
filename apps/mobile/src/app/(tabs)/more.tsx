@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
-  RefreshControl,
   ScrollView,
   Text,
   TextInput,
@@ -12,14 +11,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { NotificationType, type NotificationDto } from '@community-finance/shared';
+import { useMutation } from '@tanstack/react-query';
+import { useRouter } from 'expo-router';
 import { api, apiErrorMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
-import { formatDateTime, initials } from '@/lib/format';
-import { useNotifications } from '@/lib/queries';
+import { initials } from '@/lib/format';
+import { useUnreadCount } from '@/lib/queries';
 import { loadThemePref, setThemePref, type ThemePref } from '@/lib/theme-pref';
-import { Card, EmptyState, SectionTitle } from '@/components/ui';
+import { Card, SectionTitle } from '@/components/ui';
 
 const THEME_OPTIONS: Array<{
   value: ThemePref;
@@ -33,9 +32,8 @@ const THEME_OPTIONS: Array<{
 
 export default function MoreScreen() {
   const { user, logout } = useAuth();
-  const qc = useQueryClient();
-  const { data, isLoading, refetch, isRefetching } = useNotifications(1);
-  const notifications = data?.data ?? [];
+  const router = useRouter();
+  const { data: unread } = useUnreadCount();
   const [changingPassword, setChangingPassword] = useState(false);
   const [themePref, setThemePrefState] = useState<ThemePref | null>(null);
   const dark = useColorScheme() === 'dark';
@@ -49,13 +47,6 @@ export default function MoreScreen() {
     await setThemePref(pref);
   }
 
-  const markAllRead = useMutation({
-    mutationFn: async () => {
-      await api.post('/notifications/read-all');
-    },
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['notifications'] }),
-  });
-
   const logoutEverywhere = useMutation({
     mutationFn: async () => {
       await api.post('/auth/logout-all');
@@ -65,12 +56,7 @@ export default function MoreScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-surface dark:bg-surface-d" edges={['top']}>
-      <ScrollView
-        contentContainerClassName="px-4 pb-10"
-        refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={() => void refetch()} />
-        }
-      >
+      <ScrollView contentContainerClassName="px-4 pb-10">
         {/* Profile */}
         <View className="mb-2 mt-2 flex-row items-center gap-3">
           <View className="h-14 w-14 items-center justify-center rounded-full bg-primary">
@@ -86,34 +72,14 @@ export default function MoreScreen() {
           </View>
         </View>
 
-        {/* Notifications */}
-        <SectionTitle
-          right={
-            notifications.some((n) => !n.read) ? (
-              <Pressable onPress={() => markAllRead.mutate()}>
-                <Text className="text-sm font-medium text-primary dark:text-primary-d">
-                  Mark all read
-                </Text>
-              </Pressable>
-            ) : undefined
-          }
-        >
-          Notifications
-        </SectionTitle>
+        {/* Quick links */}
+        <SectionTitle>Inbox</SectionTitle>
         <Card>
-          {isLoading ? (
-            <ActivityIndicator className="py-6" />
-          ) : notifications.length === 0 ? (
-            <EmptyState
-              icon="bell-outline"
-              title="No notifications"
-              description="Payment updates and announcements will appear here."
-            />
-          ) : (
-            notifications.slice(0, 15).map((n, i) => (
-              <NotificationRow key={n.id} notification={n} first={i === 0} />
-            ))
-          )}
+          <ActionRow
+            icon="bell-outline"
+            label={unread ? `Notifications (${unread} unread)` : 'Notifications'}
+            onPress={() => router.push('/notifications')}
+          />
         </Card>
 
         {/* Appearance — M3 segmented control */}
@@ -189,57 +155,20 @@ export default function MoreScreen() {
           />
         </Card>
 
-        <Text className="mt-6 text-center text-xs text-on-surface-variant dark:text-on-surface-variant-d">
-          Community Finance · transparent by design
-        </Text>
+        {/* Credits */}
+        <View className="mt-8 items-center gap-1">
+          <Text className="text-xs text-on-surface-variant dark:text-on-surface-variant-d">
+            Community Finance · transparent by design
+          </Text>
+          <View className="flex-row items-center gap-1.5">
+            <MaterialCommunityIcons name="hammer-wrench" size={12} color="#777680" />
+            <Text className="text-xs font-semibold text-on-surface-variant dark:text-on-surface-variant-d">
+              Built by Setups Works
+            </Text>
+          </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
-  );
-}
-
-function NotificationRow({
-  notification,
-  first,
-}: {
-  notification: NotificationDto;
-  first: boolean;
-}) {
-  const icon =
-    notification.type === NotificationType.PAYMENT_SUCCESS
-      ? 'check-circle-outline'
-      : notification.type === NotificationType.PAYMENT_FAILED
-        ? 'alert-circle-outline'
-        : notification.type === NotificationType.PAYMENT_REMINDER
-          ? 'clock-outline'
-          : notification.type === NotificationType.EMERGENCY
-            ? 'alert-octagon-outline'
-            : 'bell-outline';
-
-  return (
-    <View
-      className={`flex-row gap-3 py-3 ${!first ? 'border-t border-outline-variant dark:border-outline-variant-d' : ''}`}
-    >
-      <MaterialCommunityIcons
-        name={icon}
-        size={20}
-        color={notification.read ? '#9ca3af' : '#4f46e5'}
-        style={{ marginTop: 2 }}
-      />
-      <View className="flex-1">
-        <Text
-          className={`text-sm ${notification.read ? 'text-on-surface-variant dark:text-on-surface-variant-d' : 'font-semibold text-on-surface dark:text-on-surface-d'}`}
-        >
-          {notification.title}
-        </Text>
-        <Text className="mt-0.5 text-xs text-on-surface-variant dark:text-on-surface-variant-d" numberOfLines={2}>
-          {notification.body}
-        </Text>
-        <Text className="mt-1 text-[11px] text-on-surface-variant dark:text-on-surface-variant-d">
-          {formatDateTime(notification.createdAt)}
-        </Text>
-      </View>
-      {!notification.read && <View className="mt-2 h-2 w-2 rounded-full bg-primary" />}
-    </View>
   );
 }
 
