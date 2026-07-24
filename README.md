@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/logo.png" alt="Community Finance" width="120" height="120" />
+
 # Community Finance
 
 ### Transparent, multi-tenant finance management for communities
