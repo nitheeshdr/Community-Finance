@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link, type Href } from 'expo-router';
+import { FAB } from 'react-native-paper';
+import { Link, useRouter, type Href } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { UserRole } from '@community-finance/shared';
 import { useAuth } from '@/lib/auth-context';
@@ -22,6 +24,8 @@ const ACTIONS: { href: Href; label: string; icon: Icon }[] = [
 
 export default function AdminHubScreen() {
   const { user } = useAuth();
+  const router = useRouter();
+  const [fabOpen, setFabOpen] = useState(false);
   const { data: pendingPayments, refetch: rp, isRefetching: r1 } = usePendingPayments();
   const { data: pendingExpenses, refetch: re, isRefetching: r2 } = usePendingExpenses();
 
@@ -29,7 +33,8 @@ export default function AdminHubScreen() {
   const expCount = pendingExpenses?.length ?? 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-surface" edges={['top']}>
+    <View className="flex-1 bg-surface">
+      <SafeAreaView className="flex-1" edges={['top']}>
       <ScrollView
         contentContainerClassName="px-4 pb-8"
         refreshControl={
@@ -91,6 +96,40 @@ export default function AdminHubScreen() {
           ))}
         </View>
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+
+      {/* Floating action button — quick admin create actions. */}
+      <FAB.Group
+        open={fabOpen}
+        visible
+        icon={fabOpen ? 'close' : 'plus'}
+        color="#FFFFFF"
+        fabStyle={{ backgroundColor: '#4F46E5', marginBottom: 96, marginRight: 4 }}
+        backdropColor="rgba(0,0,0,0.35)"
+        actions={[
+          {
+            icon: 'calendar-plus',
+            label: 'Create event',
+            onPress: () => router.push('/admin/create-event' as Href),
+          },
+          {
+            icon: 'cash-plus',
+            label: 'Record payment',
+            onPress: () => router.push('/admin/record-payment' as Href),
+          },
+          {
+            icon: 'account-plus',
+            label: 'Members',
+            onPress: () => router.push('/admin/members' as Href),
+          },
+          {
+            icon: 'cash-multiple',
+            label: 'Record income',
+            onPress: () => router.push('/admin/record-income' as Href),
+          },
+        ]}
+        onStateChange={({ open }) => setFabOpen(open)}
+      />
+    </View>
   );
 }
