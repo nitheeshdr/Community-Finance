@@ -234,6 +234,8 @@ npm run build       # production build
 
 <div align="center">
 
+<a href="https://setups.works"><img src="docs/setups-works.png" alt="Setups Works" width="220" /></a>
+
 Built by **Nitheesh Rajendran** — Founder, Setups Works
 
 Website: [https://setups.works](https://setups.works) · Email: [info@setups.works](mailto:info@setups.works)
