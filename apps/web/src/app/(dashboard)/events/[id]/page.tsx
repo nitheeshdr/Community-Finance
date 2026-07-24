@@ -92,9 +92,11 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
             <Badge variant={event.fundingMode === EventFundingMode.BALANCE ? 'secondary' : 'outline'}>
               {event.fundingMode === EventFundingMode.BALANCE
                 ? 'From community balance'
-                : event.participantIds.length > 0
-                  ? `Split · ${event.participantIds.length} members`
-                  : 'Split · all members'}
+                : event.fundingMode === EventFundingMode.COLLECT
+                  ? `Collect · ${event.participantIds.length} members`
+                  : event.participantIds.length > 0
+                    ? `Split · ${event.participantIds.length} members`
+                    : 'Split · all members'}
             </Badge>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -113,7 +115,7 @@ export default function EventDetailPage({ params }: { params: Promise<{ id: stri
                   <Pencil />
                   Edit
                 </Button>
-                {event.fundingMode === EventFundingMode.SPLIT && (
+                {event.fundingMode !== EventFundingMode.BALANCE && (
                   <Button onClick={() => setPayOpen(true)}>
                     <IndianRupee />
                     Record contribution

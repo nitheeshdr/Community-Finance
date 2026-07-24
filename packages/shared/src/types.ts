@@ -179,6 +179,8 @@ export interface EventDto {
   /** Empty array = all active members participate (SPLIT mode). */
   participantIds: string[];
   perHeadAmount: number; // paise
+  /** COLLECT mode: the fixed amount assigned to each member (paise). */
+  collectAmountPerMember?: number;
   collectedAmount: number; // paise
   spentAmount: number; // paise
   organizerId?: string;

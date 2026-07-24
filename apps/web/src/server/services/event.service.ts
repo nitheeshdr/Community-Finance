@@ -82,14 +82,23 @@ export class EventService {
     createdBy: string,
     actorRole: UserRole
   ): Promise<EventDto> {
-    const budgetPaise = toPaise(input.budget);
+    const collectPerMember =
+      input.collectAmountPerMember != null ? toPaise(input.collectAmountPerMember) : 0;
+
+    // For COLLECT, the total budget is derived: amount × selected members.
+    const budgetPaise =
+      input.fundingMode === EventFundingMode.COLLECT
+        ? collectPerMember * (input.participantIds?.length ?? 0)
+        : toPaise(input.budget ?? 0);
+
     const balance = await this.balance.getCurrentBalance(communityId);
 
-    if (input.fundingMode === EventFundingMode.BALANCE) {
-      // Balance-funded events draw straight from the community balance.
-      // The budget may exceed the current balance — approved expenses then
-      // take the balance negative (an overspend the admin accepts), rather
-      // than blocking the event. No member contributions are collected.
+    if (
+      input.fundingMode === EventFundingMode.BALANCE ||
+      input.fundingMode === EventFundingMode.COLLECT
+    ) {
+      // BALANCE draws from the community balance (may go negative).
+      // COLLECT gathers fixed contributions — neither is capped by balance.
     } else if (budgetPaise > balance) {
       // SPLIT mode keeps the original rule with super-admin override.
       if (!input.budgetOverride) {
@@ -103,6 +112,10 @@ export class EventService {
       }
     }
 
+    // SPLIT + COLLECT keep a participant scope; BALANCE has none.
+    const scoped =
+      input.fundingMode === EventFundingMode.BALANCE ? [] : (input.participantIds ?? []);
+
     const event = (await this.events.create(communityId, {
       name: input.name,
       description: input.description,
@@ -112,7 +125,8 @@ export class EventService {
       endDate: input.endDate,
       budget: budgetPaise,
       fundingMode: input.fundingMode,
-      participantIds: input.fundingMode === EventFundingMode.SPLIT ? (input.participantIds ?? []) : [],
+      participantIds: scoped,
+      collectAmountPerMember: collectPerMember,
       organizerId: input.organizerId,
       images: input.images,
       budgetOverride: input.budgetOverride,
@@ -152,6 +166,8 @@ export class EventService {
 
     const update: Record<string, unknown> = { ...input };
     let budgetChanged = false;
+    const mode = (input.fundingMode ?? existing.fundingMode) as EventFundingMode;
+
     if (
       input.participantIds &&
       JSON.stringify(input.participantIds) !==
@@ -160,16 +176,39 @@ export class EventService {
       budgetChanged = true; // participant scope changed ⇒ recalc splits
     }
 
-    if (input.budget !== undefined) {
+    if (mode === EventFundingMode.COLLECT) {
+      // Budget is derived from amount-per-member × participant count.
+      const perMember =
+        input.collectAmountPerMember != null
+          ? toPaise(input.collectAmountPerMember)
+          : (existing.collectAmountPerMember ?? 0);
+      const participants = input.participantIds ?? (existing.participantIds ?? []).map(String);
+      update.collectAmountPerMember = perMember;
+      update.budget = perMember * participants.length;
+      if (
+        perMember !== existing.collectAmountPerMember ||
+        update.budget !== existing.budget
+      ) {
+        budgetChanged = true;
+      }
+    } else if (input.budget !== undefined) {
       const budgetPaise = toPaise(input.budget);
       if (budgetPaise !== existing.budget) {
         const balance = await this.balance.getCurrentBalance(communityId);
-        if (budgetPaise > balance && !(input.budgetOverride ?? existing.budgetOverride)) {
+        if (
+          mode === EventFundingMode.SPLIT &&
+          budgetPaise > balance &&
+          !(input.budgetOverride ?? existing.budgetOverride)
+        ) {
           throw new BusinessRuleError(
             `Budget ${formatINR(budgetPaise)} exceeds available balance ${formatINR(balance)}.`
           );
         }
-        if (budgetPaise > balance && actorRole !== UserRole.SUPER_ADMIN) {
+        if (
+          mode === EventFundingMode.SPLIT &&
+          budgetPaise > balance &&
+          actorRole !== UserRole.SUPER_ADMIN
+        ) {
           throw new ForbiddenError('Only the super admin can override the budget limit');
         }
         budgetChanged = true;
@@ -332,6 +371,7 @@ export function toEventDto(event: EventEntity): EventDto {
     budget: event.budget,
     fundingMode: (event.fundingMode ?? EventFundingMode.SPLIT) as EventDto['fundingMode'],
     participantIds: (event.participantIds ?? []).map(String),
+    collectAmountPerMember: event.collectAmountPerMember || undefined,
     perHeadAmount: event.perHeadAmount ?? 0,
     collectedAmount: event.collectedAmount ?? 0,
     spentAmount: event.spentAmount ?? 0,

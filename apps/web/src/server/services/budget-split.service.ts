@@ -34,6 +34,10 @@ export class BudgetSplitService {
   async recalculateAll(communityId: string, trigger: string): Promise<void> {
     const openEvents = await this.events.findOpenEvents(communityId);
     for (const event of openEvents) {
+      // Only budget-SPLIT events track the active-member pool. BALANCE has
+      // no shares; COLLECT amounts are fixed to a chosen member set and do
+      // not change when membership changes.
+      if (event.fundingMode !== 'SPLIT') continue;
       try {
         await this.recalculate(communityId, event, trigger);
       } catch (err) {
@@ -59,15 +63,25 @@ export class BudgetSplitService {
       return null;
     }
 
-    let activeMemberIds = await this.users.findActiveMemberIds(communityId);
-    // Restrict to the admin-selected participants when a scope is set.
-    const scope = (event.participantIds ?? []).map(String);
-    if (scope.length > 0) {
-      const scopeSet = new Set(scope);
-      activeMemberIds = activeMemberIds.filter((id) => scopeSet.has(String(id)));
+    let activeMemberIds: Types.ObjectId[];
+    let perHead: number;
+
+    if (event.fundingMode === 'COLLECT') {
+      // Fixed amount from exactly the chosen members (not active-filtered);
+      // per-head does not change with community membership.
+      perHead = event.collectAmountPerMember ?? 0;
+      activeMemberIds = (event.participantIds ?? []).map((id) => new Types.ObjectId(String(id)));
+    } else {
+      // SPLIT: divide the budget across active members (optionally scoped).
+      activeMemberIds = await this.users.findActiveMemberIds(communityId);
+      const scope = (event.participantIds ?? []).map(String);
+      if (scope.length > 0) {
+        const scopeSet = new Set(scope);
+        activeMemberIds = activeMemberIds.filter((id) => scopeSet.has(String(id)));
+      }
+      perHead = activeMemberIds.length > 0 ? Math.ceil(event.budget / activeMemberIds.length) : 0;
     }
     const activeCount = activeMemberIds.length;
-    const perHead = activeCount > 0 ? Math.ceil(event.budget / activeCount) : 0;
 
     // Skip when nothing changed (same head-count share and same budget as
     // the latest history entry).

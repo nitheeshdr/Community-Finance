@@ -44,9 +44,14 @@ export default function CreateEventScreen() {
   const [category, setCategory] = useState<EventCategory>(EventCategory.OTHER);
   const [date, setDate] = useState('');
   const [budget, setBudget] = useState('');
+  const [collectAmount, setCollectAmount] = useState('');
   const [fundingMode, setFundingMode] = useState<EventFundingMode>(EventFundingMode.SPLIT);
   const [excluded, setExcluded] = useState<Set<string>>(new Set());
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const isCollect = fundingMode === EventFundingMode.COLLECT;
+  const isSplit = fundingMode === EventFundingMode.SPLIT;
+  const showParticipants = isSplit || isCollect;
 
   // Prefill when editing.
   useEffect(() => {
@@ -56,6 +61,8 @@ export default function CreateEventScreen() {
       setDate(existing.date.slice(0, 10));
       setBudget(String(toRupees(existing.budget)));
       setFundingMode(existing.fundingMode);
+      if (existing.collectAmountPerMember)
+        setCollectAmount(String(toRupees(existing.collectAmountPerMember)));
     }
   }, [isEdit, existing]);
 
@@ -71,10 +78,12 @@ export default function CreateEventScreen() {
     () => allMembers.filter((m) => !excluded.has(m.id)),
     [allMembers, excluded]
   );
-  const perHead =
-    fundingMode === EventFundingMode.SPLIT && participants.length > 0
+  const perHead = isCollect
+    ? toPaise(Number(collectAmount) || 0)
+    : isSplit && participants.length > 0
       ? Math.ceil(toPaise(Number(budget) || 0) / participants.length)
       : 0;
+  const collectTotal = isCollect ? perHead * participants.length : 0;
 
   function toggle(id: string) {
     setExcluded((prev) => {
@@ -89,10 +98,14 @@ export default function CreateEventScreen() {
     const e: Record<string, string> = {};
     if (name.trim().length < 2) e.name = 'Enter an event name';
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) e.date = 'Use format YYYY-MM-DD';
-    const b = Number(budget);
-    if (!b || b <= 0) e.budget = 'Enter a valid budget';
-    if (fundingMode === EventFundingMode.SPLIT && participants.length === 0)
-      e.participants = 'Select at least one participant';
+    if (isCollect) {
+      if (!(Number(collectAmount) > 0)) e.collect = 'Enter the amount per member';
+      if (participants.length === 0) e.participants = 'Select members to collect from';
+    } else {
+      if (!(Number(budget) > 0)) e.budget = 'Enter a valid budget';
+      if (isSplit && participants.length === 0)
+        e.participants = 'Select at least one participant';
+    }
     setErrors(e);
     if (Object.keys(e).length > 0) return;
 
@@ -100,10 +113,12 @@ export default function CreateEventScreen() {
       name: name.trim(),
       category,
       date: new Date(date),
-      budget: b,
+      ...(isCollect
+        ? { collectAmountPerMember: Number(collectAmount) }
+        : { budget: Number(budget) }),
       fundingMode,
       participantIds:
-        fundingMode === EventFundingMode.SPLIT && excluded.size > 0
+        showParticipants && (isCollect || excluded.size > 0)
           ? participants.map((m) => m.id)
           : [],
       budgetOverride: false,
@@ -151,37 +166,57 @@ export default function CreateEventScreen() {
             placeholder="2026-12-15"
             error={errors.date}
           />
-          <Field
-            label="Budget (₹)"
-            value={budget}
-            onChangeText={setBudget}
-            keyboardType="decimal-pad"
-            error={errors.budget}
-          />
           <SegmentField
             label="Funding"
             value={fundingMode}
             onChange={setFundingMode}
             options={[
-              { value: EventFundingMode.SPLIT, label: 'Split', icon: 'account-group' },
-              { value: EventFundingMode.BALANCE, label: 'Balance', icon: 'wallet' },
+              { value: EventFundingMode.SPLIT, label: 'Split' },
+              { value: EventFundingMode.BALANCE, label: 'Balance' },
+              { value: EventFundingMode.COLLECT, label: 'Collect' },
             ]}
           />
 
-          {fundingMode === EventFundingMode.BALANCE ? (
-            <View className="flex-row items-center gap-2 rounded-m3-md bg-surface-container p-3">
-              <MaterialCommunityIcons name="information-outline" size={16} color="#5D5C72" />
-              <Text className="flex-1 text-xs text-on-surface-variant">
-                Funded from the community balance — no member contributions collected.
-              </Text>
-            </View>
+          {/* Amount field: budget for Split/Balance, per-member for Collect */}
+          {isCollect ? (
+            <Field
+              label="Amount per member (₹)"
+              value={collectAmount}
+              onChangeText={setCollectAmount}
+              keyboardType="decimal-pad"
+              error={errors.collect}
+            />
           ) : (
+            <Field
+              label="Budget (₹)"
+              value={budget}
+              onChangeText={setBudget}
+              keyboardType="decimal-pad"
+              error={errors.budget}
+            />
+          )}
+
+          <View className="mb-3 flex-row items-start gap-2 rounded-m3-md bg-surface-container p-3">
+            <MaterialCommunityIcons name="information-outline" size={16} color="#5D5C72" />
+            <Text className="flex-1 text-xs text-on-surface-variant">
+              {fundingMode === EventFundingMode.BALANCE
+                ? 'From community balance — the expense is deducted from the available balance. No member contributions.'
+                : isSplit
+                  ? 'Split among members — the selected members share the budget equally, each with a Pay button.'
+                  : 'Collect payment — each selected member is assigned the same amount and pays it directly via the app. Not tied to the community balance.'}
+            </Text>
+          </View>
+
+          {fundingMode === EventFundingMode.BALANCE ? null : (
             <View className="rounded-m3-md border border-outline-variant p-3">
               <View className="mb-2 flex-row items-center justify-between">
                 <Text className="text-sm font-medium text-on-surface">
-                  Participants ({participants.length}/{allMembers.length})
+                  {isCollect ? 'Collect from' : 'Participants'} ({participants.length}/
+                  {allMembers.length})
                 </Text>
-                <Text className="text-sm font-semibold text-primary">{inr(perHead)} each</Text>
+                <Text className="text-sm font-semibold text-primary">
+                  {inr(perHead)} each{isCollect ? ` · ${inr(collectTotal)} total` : ''}
+                </Text>
               </View>
               <View className="mb-2 flex-row gap-3">
                 <Pressable onPress={() => setExcluded(new Set())}>
@@ -232,7 +267,7 @@ export default function CreateEventScreen() {
         <SubmitBar
           label={isEdit ? 'Save changes' : 'Create event'}
           loading={create.isPending || update.isPending}
-          disabled={fundingMode === EventFundingMode.SPLIT && participants.length === 0}
+          disabled={showParticipants && participants.length === 0}
           onPress={submit}
         />
       </KeyboardAvoidingView>

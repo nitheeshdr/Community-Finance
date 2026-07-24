@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useQuery } from '@tanstack/react-query';
-import { Search, Wallet, Users as UsersIcon } from 'lucide-react';
+import { IndianRupee, Search, Wallet, Users as UsersIcon } from 'lucide-react';
 import {
   EventCategory,
   EventFundingMode,
@@ -55,7 +55,8 @@ const formSchema = z.object({
   description: z.string().max(2000).optional(),
   category: z.nativeEnum(EventCategory),
   date: z.string().min(1, 'Date is required'),
-  budget: z.coerce.number().positive('Enter a valid budget'),
+  budget: z.coerce.number().min(0),
+  collectAmount: z.coerce.number().min(0),
   fundingMode: z.nativeEnum(EventFundingMode),
   budgetOverride: z.boolean(),
 });
@@ -99,6 +100,7 @@ export function EventFormDialog({
       category: EventCategory.OTHER,
       date: '',
       budget: 0,
+      collectAmount: 0,
       fundingMode: EventFundingMode.SPLIT,
       budgetOverride: false,
     },
@@ -112,6 +114,7 @@ export function EventFormDialog({
         category: event?.category ?? EventCategory.OTHER,
         date: event ? event.date.slice(0, 10) : '',
         budget: event ? toRupees(event.budget) : 0,
+        collectAmount: event?.collectAmountPerMember ? toRupees(event.collectAmountPerMember) : 0,
         fundingMode: event?.fundingMode ?? EventFundingMode.SPLIT,
         budgetOverride: event?.budgetOverride ?? false,
       });
@@ -132,13 +135,18 @@ export function EventFormDialog({
 
   const fundingMode = form.watch('fundingMode');
   const budget = form.watch('budget');
+  const collectAmount = form.watch('collectAmount');
+  const isCollect = fundingMode === EventFundingMode.COLLECT;
+  const isSplit = fundingMode === EventFundingMode.SPLIT;
+  const showParticipants = isSplit || isCollect;
 
   const participants = useMemo(
     () => allMembers.filter((m) => !excluded.has(m.id)),
     [allMembers, excluded]
   );
-  const perHead =
-    fundingMode === EventFundingMode.SPLIT && participants.length > 0
+  const perHead = isCollect
+    ? toPaise(Number(collectAmount) || 0)
+    : isSplit && participants.length > 0
       ? Math.ceil(toPaise(Number(budget) || 0) / participants.length)
       : 0;
 
@@ -160,19 +168,33 @@ export function EventFormDialog({
   }
 
   const onSubmit = form.handleSubmit(async (values) => {
+    const collect = values.fundingMode === EventFundingMode.COLLECT;
+    const split = values.fundingMode === EventFundingMode.SPLIT;
+
+    if (collect) {
+      if (!(Number(values.collectAmount) > 0)) {
+        form.setError('collectAmount', { message: 'Enter the amount per member' });
+        return;
+      }
+      if (participants.length === 0) return;
+    } else if (!(Number(values.budget) > 0)) {
+      form.setError('budget', { message: 'Enter a valid budget' });
+      return;
+    }
+
     const participantIds =
-      values.fundingMode === EventFundingMode.SPLIT && excluded.size > 0
-        ? participants.map((m) => m.id)
-        : [];
+      (split && excluded.size > 0) || collect ? participants.map((m) => m.id) : [];
     const payload = {
       name: values.name,
       description: values.description || undefined,
       category: values.category,
       date: new Date(values.date),
-      budget: values.budget,
       fundingMode: values.fundingMode,
       participantIds,
       budgetOverride: values.budgetOverride,
+      ...(collect
+        ? { collectAmountPerMember: values.collectAmount }
+        : { budget: values.budget }),
     };
     if (isEdit && event) {
       await updateMutation.mutateAsync(payload);
@@ -229,24 +251,16 @@ export function EventFormDialog({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="e-budget">Budget (₹)</Label>
-            <Input id="e-budget" type="number" min="1" step="0.01" {...form.register('budget')} />
-            {form.formState.errors.budget && (
-              <p className="text-xs text-destructive">{form.formState.errors.budget.message}</p>
-            )}
-          </div>
-
           {/* Funding mode selector */}
           <div className="space-y-2">
             <Label>Funding</Label>
-            <div className="grid gap-2 sm:grid-cols-2">
+            <div className="grid gap-2 sm:grid-cols-3">
               <FundingOption
-                selected={fundingMode === EventFundingMode.SPLIT}
+                selected={isSplit}
                 onClick={() => form.setValue('fundingMode', EventFundingMode.SPLIT)}
                 icon={<UsersIcon className="h-4 w-4" />}
                 title="Split among members"
-                description="Everyone pays an equal share"
+                description="Share a budget equally"
               />
               <FundingOption
                 selected={fundingMode === EventFundingMode.BALANCE}
@@ -255,19 +269,60 @@ export function EventFormDialog({
                 title="From community balance"
                 description="No member contributions"
               />
+              <FundingOption
+                selected={isCollect}
+                onClick={() => form.setValue('fundingMode', EventFundingMode.COLLECT)}
+                icon={<IndianRupee className="h-4 w-4" />}
+                title="Collect payment"
+                description="Fixed amount each member pays"
+              />
             </div>
           </div>
 
-          {/* Participant selection (SPLIT only) */}
-          {fundingMode === EventFundingMode.SPLIT && (
+          {/* Amount: budget for Split/Balance, per-member for Collect */}
+          {isCollect ? (
+            <div className="space-y-2">
+              <Label htmlFor="e-collect">Amount per member (₹)</Label>
+              <Input
+                id="e-collect"
+                type="number"
+                min="1"
+                step="0.01"
+                {...form.register('collectAmount')}
+              />
+              {form.formState.errors.collectAmount && (
+                <p className="text-xs text-destructive">
+                  {form.formState.errors.collectAmount.message}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor="e-budget">Budget (₹)</Label>
+              <Input id="e-budget" type="number" min="1" step="0.01" {...form.register('budget')} />
+              {form.formState.errors.budget && (
+                <p className="text-xs text-destructive">{form.formState.errors.budget.message}</p>
+              )}
+            </div>
+          )}
+
+          {/* Participant selection (SPLIT + COLLECT) */}
+          {showParticipants && (
             <div className="space-y-2 rounded-lg border p-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <Label className="text-sm">
-                  Participants ({participants.length}/{allMembers.length})
+                  {isCollect ? 'Collect from' : 'Participants'} ({participants.length}/
+                  {allMembers.length})
                 </Label>
                 <p className="text-sm font-medium">
-                  Per member:{' '}
+                  {isCollect ? 'Each: ' : 'Per member: '}
                   <span className="tabular-nums text-primary">{inr(perHead)}</span>
+                  {isCollect && (
+                    <span className="text-muted-foreground">
+                      {' '}
+                      · Total {inr(perHead * participants.length)}
+                    </span>
+                  )}
                 </p>
               </div>
               <div className="relative">
@@ -360,7 +415,7 @@ export function EventFormDialog({
             <Button
               type="submit"
               loading={pending}
-              disabled={fundingMode === EventFundingMode.SPLIT && participants.length === 0}
+              disabled={showParticipants && participants.length === 0}
             >
               {isEdit ? 'Save changes' : 'Create event'}
             </Button>

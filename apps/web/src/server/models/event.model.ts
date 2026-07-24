@@ -27,8 +27,10 @@ const eventSchema = new Schema(
       enum: Object.values(EventFundingMode),
       default: EventFundingMode.SPLIT,
     },
-    /** SPLIT mode participant scope; empty = all active members. */
+    /** SPLIT/COLLECT participant scope; empty = all active members. */
     participantIds: { type: [Schema.Types.ObjectId], ref: 'User', default: [] },
+    /** COLLECT mode: fixed amount assigned to each member (paise). */
+    collectAmountPerMember: { type: Number, default: 0 },
     /** Paise — denormalized from the latest split calculation. */
     perHeadAmount: { type: Number, default: 0 },
     /** Paise — denormalized running totals, updated transactionally. */

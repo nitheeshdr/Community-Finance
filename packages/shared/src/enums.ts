@@ -79,6 +79,8 @@ export enum EventFundingMode {
   BALANCE = 'BALANCE',
   /** Budget split equally among the selected (or all) active members. */
   SPLIT = 'SPLIT',
+  /** Collect a fixed assigned amount from each selected member. */
+  COLLECT = 'COLLECT',
 }
 
 export enum EventCategory {
