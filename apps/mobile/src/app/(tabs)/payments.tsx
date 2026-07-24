@@ -164,7 +164,7 @@ function PaymentRow({ payment }: { payment: PaymentDto }) {
           onPress={() => void openReceipt()}
           className="mt-3 flex-row items-center gap-1.5 self-start rounded-m3-sm bg-primary-container px-2.5 py-1.5 active:opacity-70 dark:bg-primary-container-d"
         >
-          <MaterialCommunityIcons name="file-download-outline" size={14} color="#984447" />
+          <MaterialCommunityIcons name="file-download-outline" size={14} color="#4f46e5" />
           <Text className="text-xs font-semibold text-primary dark:text-primary-d">
             Receipt {payment.receiptNumber}
           </Text>
@@ -206,7 +206,7 @@ function AutoPayCard() {
     <Card>
       <View className="flex-row items-center gap-3">
         <View className="h-11 w-11 items-center justify-center rounded-m3-md bg-primary-container dark:bg-primary-container-d">
-          <MaterialCommunityIcons name="autorenew" size={22} color="#984447" />
+          <MaterialCommunityIcons name="autorenew" size={22} color="#4f46e5" />
         </View>
         <View className="flex-1">
           <Text className="text-sm font-semibold text-on-surface dark:text-on-surface-d">

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Community Finance",
     "slug": "community-finance",
-    "version": "1.5.0",
+    "version": "1.6.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "communityfinance",
@@ -13,11 +13,12 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#7A2E33",
+        "backgroundColor": "#4338CA",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "package": "com.setupsworks.finance",
+      "versionCode": 6,
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -29,7 +30,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#984447",
+          "backgroundColor": "#4f46e5",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 120
         }

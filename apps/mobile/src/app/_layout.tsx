@@ -5,11 +5,15 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { colorScheme } from 'nativewind';
 import { PaperProvider } from 'react-native-paper';
+import { en, registerTranslation } from 'react-native-paper-dates';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
 import { getScheme, paperLightTheme } from '@/lib/theme';
 import '../global.css';
 
 SplashScreen.preventAutoHideAsync();
+
+// Locale for the Material date picker (react-native-paper-dates).
+registerTranslation('en', en);
 
 // App is light-only — lock NativeWind's scheme so `dark:` never activates.
 colorScheme.set('light');

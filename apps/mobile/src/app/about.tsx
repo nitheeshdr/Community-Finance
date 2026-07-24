@@ -29,7 +29,7 @@ export default function AboutScreen() {
         className="mt-8 flex-row items-center gap-3 rounded-m3-lg bg-surface-container p-4 active:opacity-80"
       >
         <View className="h-10 w-10 items-center justify-center rounded-full bg-primary-container">
-          <MaterialCommunityIcons name="star-four-points-outline" size={20} color="#984447" />
+          <MaterialCommunityIcons name="star-four-points-outline" size={20} color="#4F46E5" />
         </View>
         <View className="flex-1">
           <Text className="text-sm font-semibold text-on-surface">What&rsquo;s new</Text>
@@ -46,7 +46,7 @@ export default function AboutScreen() {
         <Pressable onPress={() => void Linking.openURL('https://setups.works')}>
           <Image
             source={setupsWorksLogo}
-            style={{ width: 220, height: 80 }}
+            style={{ width: 132, height: 48 }}
             contentFit="contain"
           />
         </Pressable>
@@ -55,14 +55,14 @@ export default function AboutScreen() {
           onPress={() => void Linking.openURL('https://setups.works')}
           className="mt-4 flex-row items-center gap-1.5"
         >
-          <MaterialCommunityIcons name="web" size={15} color="#984447" />
+          <MaterialCommunityIcons name="web" size={15} color="#4F46E5" />
           <Text className="text-sm font-medium text-primary">setups.works</Text>
         </Pressable>
         <Pressable
           onPress={() => void Linking.openURL('mailto:info@setups.works')}
           className="mt-2 flex-row items-center gap-1.5"
         >
-          <MaterialCommunityIcons name="email-outline" size={15} color="#984447" />
+          <MaterialCommunityIcons name="email-outline" size={15} color="#4F46E5" />
           <Text className="text-sm font-medium text-primary">info@setups.works</Text>
         </Pressable>
       </View>

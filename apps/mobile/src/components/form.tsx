@@ -1,7 +1,77 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { FlatList, Modal, Pressable, Text, View } from 'react-native';
 import { Button, SegmentedButtons, TextInput } from 'react-native-paper';
+import { DatePickerModal } from 'react-native-paper-dates';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+/** Format a Date to a YYYY-MM-DD string in local time. */
+function toISODate(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/** Human-friendly label for a YYYY-MM-DD value, e.g. "15 Dec 2026". */
+function prettyDate(value: string): string {
+  const d = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return value;
+  return new Intl.DateTimeFormat('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  }).format(d);
+}
+
+/**
+ * Material 3 date picker field. Tapping it opens the Paper calendar modal;
+ * the value is stored as a YYYY-MM-DD string.
+ */
+export function DateField({
+  label,
+  value,
+  onChange,
+  error,
+  placeholder = 'Select date',
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  error?: string;
+  placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const parsed = value ? new Date(`${value}T00:00:00`) : undefined;
+  const date = parsed && !Number.isNaN(parsed.getTime()) ? parsed : undefined;
+
+  return (
+    <View className="mb-3">
+      <Text className="mb-1.5 text-sm font-medium text-on-surface-variant">{label}</Text>
+      <Pressable
+        onPress={() => setOpen(true)}
+        className="flex-row items-center justify-between rounded-md border border-outline px-3 py-3"
+      >
+        <Text className={value ? 'text-on-surface' : 'text-on-surface-variant'}>
+          {value ? prettyDate(value) : placeholder}
+        </Text>
+        <MaterialCommunityIcons name="calendar-month-outline" size={20} color="#777680" />
+      </Pressable>
+      {error ? <Text className="mt-1 text-xs text-error">{error}</Text> : null}
+
+      <DatePickerModal
+        locale="en"
+        mode="single"
+        visible={open}
+        date={date}
+        onDismiss={() => setOpen(false)}
+        onConfirm={({ date: picked }) => {
+          setOpen(false);
+          if (picked) onChange(toISODate(picked));
+        }}
+      />
+    </View>
+  );
+}
 
 /** Labeled Paper outlined text input. */
 export function Field({
@@ -156,7 +226,7 @@ export function PickerField({
                     ) : null}
                   </View>
                   {item.value === value && (
-                    <MaterialCommunityIcons name="check" size={18} color="#984447" />
+                    <MaterialCommunityIcons name="check" size={18} color="#4F46E5" />
                   )}
                 </Pressable>
               )}

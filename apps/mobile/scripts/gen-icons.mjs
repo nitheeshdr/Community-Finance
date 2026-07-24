@@ -9,24 +9,24 @@ const dir = resolve(dirname(fileURLToPath(import.meta.url)), '../assets/images')
 const GRAD = `
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#B0555A"/>
-      <stop offset="1" stop-color="#7A2E33"/>
+      <stop offset="0" stop-color="#5B54F0"/>
+      <stop offset="1" stop-color="#3B32C8"/>
     </linearGradient>
   </defs>`;
 
-// The rupee mark + community ring + gold member dot, drawn in `color`.
+// The rupee mark + community ring + mint member dot, drawn in `color`.
 // `scale` shrinks it toward the centre so adaptive-icon cropping is safe.
 function mark(color, scale = 1, ringOpacity = 0.18) {
   const t = (1 - scale) * 512;
   return `
     <g transform="translate(${t} ${t}) scale(${scale})">
       <circle cx="512" cy="512" r="340" fill="none" stroke="${color}" stroke-opacity="${ringOpacity}" stroke-width="34"/>
-      <circle cx="512" cy="172" r="46" fill="#FFD37A"/>
+      <circle cx="512" cy="172" r="46" fill="#B9F6CA"/>
       <text x="512" y="700" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-weight="bold" font-size="520" fill="${color}">&#8377;</text>
     </g>`;
 }
 
-// Full coloured icon: brick-rose gradient square + white mark (opaque).
+// Full coloured icon: indigo gradient square + white mark (opaque).
 const fullIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   ${GRAD}
   <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
@@ -34,7 +34,7 @@ const fullIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1
 </svg>`;
 
 // Adaptive foreground: white mark on TRANSPARENT bg, pulled into the safe
-// zone (~62%). Android draws the brick-rose backgroundColor behind it.
+// zone (~62%). Android draws the indigo backgroundColor behind it.
 const foreground = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   ${mark('#FFFFFF', 0.62, 0.3)}
 </svg>`;
@@ -44,7 +44,7 @@ const monochrome = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height=
   ${mark('#000000', 0.62, 0.35)}
 </svg>`;
 
-// Splash: white mark on transparent (shown on the brick-rose splash background).
+// Splash: white mark on transparent (shown on the indigo splash background).
 const splash = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
   ${mark('#FFFFFF', 0.9, 0.28)}
 </svg>`;

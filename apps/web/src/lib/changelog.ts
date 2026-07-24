@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.6.0',
+    date: '2026-07-24',
+    title: 'Date picker & polished sign-in',
+    changes: [
+      'Material date picker: tap to pick an event date from a calendar',
+      'Redesigned sign-in screen with a cleaner, more spacious layout',
+      'Sign-in no longer hides the field behind the keyboard',
+    ],
+  },
+  {
     version: '1.5.0',
     date: '2026-07-24',
     title: 'Data management, searchable pickers & About',

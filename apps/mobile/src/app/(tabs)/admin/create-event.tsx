@@ -20,7 +20,7 @@ import { useCreateEvent, useMemberPicker, useUpdateEvent } from '@/lib/admin';
 import { apiErrorMessage } from '@/lib/api';
 import { useEvent } from '@/lib/queries';
 import { inr } from '@/lib/format';
-import { Field, FormScreen, PickerField, SegmentField, SubmitBar } from '@/components/form';
+import { DateField, Field, FormScreen, PickerField, SegmentField, SubmitBar } from '@/components/form';
 
 const CATEGORIES = [
   { value: EventCategory.TEMPLE_FESTIVAL, label: 'Temple festival' },
@@ -159,11 +159,11 @@ export default function CreateEventScreen() {
             searchable={false}
             options={CATEGORIES.map((c) => ({ value: c.value, label: c.label }))}
           />
-          <Field
-            label="Date (YYYY-MM-DD)"
+          <DateField
+            label="Date"
             value={date}
-            onChangeText={setDate}
-            placeholder="2026-12-15"
+            onChange={setDate}
+            placeholder="Pick a date"
             error={errors.date}
           />
           <SegmentField
@@ -239,7 +239,7 @@ export default function CreateEventScreen() {
                         <MaterialCommunityIcons
                           name={included ? 'checkbox-marked' : 'checkbox-blank-outline'}
                           size={20}
-                          color={included ? '#984447' : '#777680'}
+                          color={included ? '#4F46E5' : '#777680'}
                         />
                         <Text
                           className={`flex-1 text-sm ${included ? 'text-on-surface' : 'text-on-surface-variant line-through'}`}

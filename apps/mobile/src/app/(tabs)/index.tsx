@@ -80,7 +80,7 @@ export default function HomeScreen() {
           <View className="absolute -bottom-20 -left-8 h-48 w-48 rounded-full bg-white/5" />
           <View className="p-6">
             <View className="flex-row items-center gap-2">
-              <MaterialCommunityIcons name="wallet-outline" size={16} color="#FFDAD9" />
+              <MaterialCommunityIcons name="wallet-outline" size={16} color="#E2DFFF" />
               <Text className="text-xs font-medium uppercase tracking-wider text-primary-container dark:text-on-primary-container-d">
                 Community balance
               </Text>
@@ -178,7 +178,7 @@ export default function HomeScreen() {
               <Pressable>
                 <Card className="mb-2 flex-row items-center gap-3">
                   <View className="h-12 w-12 items-center justify-center rounded-m3-md bg-primary-container dark:bg-primary-container-d">
-                    <MaterialCommunityIcons name="calendar-star" size={22} color="#984447" />
+                    <MaterialCommunityIcons name="calendar-star" size={22} color="#4F46E5" />
                   </View>
                   <View className="flex-1">
                     <Text className="text-sm font-semibold text-on-surface dark:text-on-surface-d">
@@ -273,7 +273,7 @@ function HeroChip({
   return (
     <View className="flex-1 rounded-m3-md bg-white/15 px-3 py-2.5">
       <View className="flex-row items-center gap-1">
-        <MaterialCommunityIcons name={icon} size={13} color="#FFDAD9" />
+        <MaterialCommunityIcons name={icon} size={13} color="#E2DFFF" />
         <Text className="text-[11px] text-primary-container dark:text-on-primary-container-d">
           {label}
         </Text>

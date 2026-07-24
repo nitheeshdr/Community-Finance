@@ -201,7 +201,7 @@ export default function EventDetailScreen() {
         {/* Balance-funded events: nothing to pay */}
         {event.fundingMode === EventFundingMode.BALANCE && (
           <Card className="mb-4 flex-row items-center gap-3">
-            <MaterialCommunityIcons name="wallet-outline" size={22} color="#984447" />
+            <MaterialCommunityIcons name="wallet-outline" size={22} color="#4F46E5" />
             <Text className="flex-1 text-sm text-on-surface-variant dark:text-on-surface-variant-d">
               This event is funded from the community balance. No member contribution is needed.
             </Text>
