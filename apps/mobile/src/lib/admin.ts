@@ -14,8 +14,10 @@ import type {
   EventStatus,
   ExpenseDto,
   MemberDto,
+  MemberLedgerDto,
   PaginationMeta,
   PaymentDto,
+  PeriodDuesDto,
   UpdateEventInput,
   UserStatus,
 } from '@community-finance/shared';
@@ -67,6 +69,30 @@ export function usePendingExpenses() {
       const res = await api.get<ApiSuccess<ExpenseDto[]>>('/expenses', {
         params: { page: 1, limit: 50, status: 'PENDING' },
       });
+      return res.data.data;
+    },
+  });
+}
+
+/** Subscription dues for a month — who has paid and who hasn't. */
+export function useDues(period: string) {
+  return useQuery({
+    queryKey: ['admin', 'dues', period],
+    queryFn: async () => {
+      const res = await api.get<ApiSuccess<PeriodDuesDto>>('/dues', { params: { period } });
+      return res.data.data;
+    },
+    enabled: /^\d{4}-\d{2}$/.test(period),
+  });
+}
+
+/** A member's month-by-month subscription ledger. */
+export function useMemberLedger(memberId: string) {
+  return useQuery({
+    queryKey: ['admin', 'ledger', memberId],
+    enabled: Boolean(memberId),
+    queryFn: async () => {
+      const res = await api.get<ApiSuccess<MemberLedgerDto>>(`/members/${memberId}/ledger`);
       return res.data.data;
     },
   });

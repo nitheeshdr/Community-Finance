@@ -7,6 +7,7 @@ import { useMember } from '@/features/members/api';
 import { MemberStatusBadge } from '@/features/members/status-badge';
 import { usePayments } from '@/features/payments/api';
 import { PaymentStatusBadge } from '@/features/payments/status-badge';
+import { MemberLedger } from '@/features/dues/member-ledger';
 import { PaginationControls } from '@/components/shared/pagination-controls';
 import { formatDate, initials, inr } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -150,7 +151,17 @@ export default function MemberDetailPage({
         </Card>
       </div>
 
-      {/* Payment history renders here once the payments module lands (M4). */}
+      {/* Monthly subscription ledger — paid/unpaid per month */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">Subscription ledger</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <MemberLedger memberId={member.id} />
+        </CardContent>
+      </Card>
+
+      {/* All payment records */}
       <Card>
         <CardHeader>
           <CardTitle className="text-sm">Payment history</CardTitle>

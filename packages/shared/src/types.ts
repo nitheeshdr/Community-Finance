@@ -357,6 +357,49 @@ export interface FinancialReportDto {
   snapshot: boolean;
 }
 
+/* ------------------------------------------------------------------ */
+/* Subscription dues                                                   */
+/* ------------------------------------------------------------------ */
+
+export type DueStatus = 'PAID' | 'PENDING' | 'OVERDUE' | 'UNPAID';
+
+export interface MemberDueDto {
+  memberId: string;
+  name: string;
+  phone: string;
+  status: DueStatus;
+  amount: number; // paise
+}
+
+export interface PeriodDuesDto {
+  period: string;
+  fee: number; // paise
+  total: number;
+  paid: number;
+  unpaid: number;
+  members: MemberDueDto[]; // unpaid-first
+}
+
+export interface MemberLedgerEntryDto {
+  period: string; // YYYY-MM
+  status: DueStatus;
+  amount: number; // paise
+  paidAt?: string;
+  method?: string;
+  receiptNumber?: string;
+}
+
+export interface MemberLedgerDto {
+  memberId: string;
+  name: string;
+  phone: string;
+  memberSince: string;
+  totalPaid: number;
+  paidMonths: number;
+  unpaidMonths: number;
+  entries: MemberLedgerEntryDto[]; // newest first
+}
+
 export interface GlobalSearchResultDto {
   members: Array<{ id: string; name: string; phone: string }>;
   events: Array<{ id: string; name: string; date: string }>;

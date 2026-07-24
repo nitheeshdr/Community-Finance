@@ -20,6 +20,7 @@ import { BalanceService } from '../services/balance.service';
 import { BudgetSplitService } from '../services/budget-split.service';
 import { CronService } from '../services/cron.service';
 import { DashboardService } from '../services/dashboard.service';
+import { DuesService } from '../services/dues.service';
 import { DocumentRepository, DocumentService } from '../services/document.service';
 import { EventService } from '../services/event.service';
 import { ExpenseRepository, ExpenseService } from '../services/expense.service';
@@ -176,6 +177,8 @@ export const getDashboardService = () =>
     'DashboardService',
     () => new DashboardService(getBalanceService(), getFeeConfigRepository())
   );
+export const getDuesService = () =>
+  container.resolve('DuesService', () => new DuesService(getFeeConfigRepository()));
 export const getCronService = () =>
   container.resolve(
     'CronService',

@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   BarChart3,
   Calendar,
+  CalendarClock,
   CreditCard,
   FileText,
   FolderOpen,
@@ -44,6 +45,12 @@ const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
     title: 'Finance',
     items: [
       { href: '/payments', label: 'Payments', icon: CreditCard },
+      {
+        href: '/dues',
+        label: 'Monthly Dues',
+        icon: CalendarClock,
+        roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
+      },
       { href: '/expenses', label: 'Expenses', icon: Receipt },
       { href: '/income', label: 'Income', icon: TrendingUp },
       { href: '/reports', label: 'Reports', icon: BarChart3 },

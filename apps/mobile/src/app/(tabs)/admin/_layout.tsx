@@ -19,6 +19,8 @@ export default function AdminLayout() {
       <Stack.Screen name="add-member" options={{ title: 'Add member', presentation: 'modal' }} />
       <Stack.Screen name="approvals" options={{ title: 'Approvals' }} />
       <Stack.Screen name="report" options={{ title: 'Reports' }} />
+      <Stack.Screen name="dues" options={{ title: 'Monthly dues' }} />
+      <Stack.Screen name="ledger" options={{ title: 'Ledger' }} />
       <Stack.Screen name="create-event" options={{ title: 'Create event' }} />
       <Stack.Screen name="record-payment" options={{ title: 'Record payment' }} />
       <Stack.Screen name="add-expense" options={{ title: 'Add expense' }} />

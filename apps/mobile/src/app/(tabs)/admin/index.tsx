@@ -11,6 +11,7 @@ type Icon = keyof typeof MaterialCommunityIcons.glyphMap;
 
 const ACTIONS: { href: Href; label: string; icon: Icon }[] = [
   { href: '/admin/members' as Href, label: 'Members', icon: 'account-group-outline' },
+  { href: '/admin/dues' as Href, label: 'Monthly dues', icon: 'calendar-clock' },
   { href: '/admin/create-event' as Href, label: 'Create event', icon: 'calendar-plus' },
   { href: '/admin/record-payment' as Href, label: 'Record payment', icon: 'cash-plus' },
   { href: '/admin/add-expense' as Href, label: 'Add expense', icon: 'receipt' },
