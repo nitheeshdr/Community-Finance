@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { colorScheme } from 'nativewind';
 import { PaperProvider } from 'react-native-paper';
 import { en, registerTranslation } from 'react-native-paper-dates';
+import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
 import { getScheme, paperLightTheme } from '@/lib/theme';
 import '../global.css';
@@ -108,12 +109,14 @@ export default function RootLayout() {
   );
 
   return (
-    <PaperProvider theme={paperLightTheme}>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <RootNavigator />
-        </AuthProvider>
-      </QueryClientProvider>
-    </PaperProvider>
+    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+      <PaperProvider theme={paperLightTheme}>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <RootNavigator />
+          </AuthProvider>
+        </QueryClientProvider>
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 }
