@@ -15,6 +15,7 @@ const ACTIONS: { href: Href; label: string; icon: Icon }[] = [
   { href: '/admin/record-payment' as Href, label: 'Record payment', icon: 'cash-plus' },
   { href: '/admin/add-expense' as Href, label: 'Add expense', icon: 'receipt' },
   { href: '/admin/record-income' as Href, label: 'Record income', icon: 'cash-multiple' },
+  { href: '/admin/report' as Href, label: 'Reports', icon: 'chart-box-outline' },
   { href: '/admin/announcement' as Href, label: 'Announce', icon: 'bullhorn-outline' },
 ];
 

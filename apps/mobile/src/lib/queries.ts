@@ -4,6 +4,7 @@ import type {
   DashboardStatsDto,
   EventDto,
   EventSplitDto,
+  FinancialReportDto,
   NotificationDto,
   PaymentDto,
   SubscriptionDto,
@@ -91,6 +92,18 @@ export function useNotifications(page = 1) {
         params: { page, limit: 30 },
       });
       return res.data;
+    },
+  });
+}
+
+export function useReport(period: string, date?: string) {
+  return useQuery({
+    queryKey: ['report', period, date],
+    queryFn: async () => {
+      const res = await api.get<ApiSuccess<FinancialReportDto>>('/reports', {
+        params: { period, ...(date ? { date } : {}) },
+      });
+      return res.data.data;
     },
   });
 }
