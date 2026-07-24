@@ -8,8 +8,12 @@ import '../events/events_screen.dart';
 import '../admin/admin_screen.dart';
 import '../more/more_screen.dart';
 
-/// Bottom-navigation shell hosting the primary tabs. The Admin tab only
-/// appears for admin roles (mirrors the RN tab layout).
+/// Adaptive navigation shell:
+///  - compact (< 600dp): bottom [NavigationBar]
+///  - medium (600–1240dp): [NavigationRail]
+///  - expanded (≥ 1240dp): extended [NavigationRail]
+///
+/// The Admin tab appears only for admin roles (mirrors the RN tab layout).
 class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key});
 
@@ -34,24 +38,54 @@ class _MainShellState extends ConsumerState<MainShell> {
     ];
 
     final index = _index.clamp(0, tabs.length - 1);
+    final body = IndexedStack(index: index, children: [for (final t in tabs) t.screen]);
 
-    return Scaffold(
-      body: IndexedStack(
-        index: index,
-        children: [for (final t in tabs) t.screen],
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: index,
-        onDestinationSelected: (i) => setState(() => _index = i),
-        destinations: [
-          for (final t in tabs)
-            NavigationDestination(
-              icon: Icon(t.icon),
-              selectedIcon: Icon(t.activeIcon),
-              label: t.label,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+
+        if (width < 600) {
+          return Scaffold(
+            body: body,
+            bottomNavigationBar: NavigationBar(
+              selectedIndex: index,
+              onDestinationSelected: (i) => setState(() => _index = i),
+              destinations: [
+                for (final t in tabs)
+                  NavigationDestination(
+                    icon: Icon(t.icon),
+                    selectedIcon: Icon(t.activeIcon),
+                    label: t.label,
+                  ),
+              ],
             ),
-        ],
-      ),
+          );
+        }
+
+        final extended = width >= 1240;
+        return Scaffold(
+          body: Row(
+            children: [
+              NavigationRail(
+                extended: extended,
+                selectedIndex: index,
+                onDestinationSelected: (i) => setState(() => _index = i),
+                leading: const SizedBox(height: 8),
+                destinations: [
+                  for (final t in tabs)
+                    NavigationRailDestination(
+                      icon: Icon(t.icon),
+                      selectedIcon: Icon(t.activeIcon),
+                      label: Text(t.label),
+                    ),
+                ],
+              ),
+              const VerticalDivider(width: 1),
+              Expanded(child: body),
+            ],
+          ),
+        );
+      },
     );
   }
 }

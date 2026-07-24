@@ -32,7 +32,9 @@ class _AppState extends ConsumerState<App> {
     return MaterialApp.router(
       title: 'Community Finance',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
+      theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ThemeMode.system,
       routerConfig: _router,
     );
   }
