@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, HelperText, TextInput } from 'react-native-paper';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { PHONE_REGEX } from '@community-finance/shared';
 import { Logo } from '@/components/logo';
@@ -23,7 +24,6 @@ export default function LoginScreen() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Prefill the last phone number used on this device.
   useEffect(() => {
     void getLastPhone().then((saved) => {
       if (saved) setPhone((current) => current || saved);
@@ -51,30 +51,34 @@ export default function LoginScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-surface dark:bg-surface-d">
+    <View className="flex-1 bg-surface">
+      {/* Hero */}
+      <View className="items-center rounded-b-[40px] bg-primary pb-10 pt-20">
+        <View className="rounded-3xl bg-white/15 p-3">
+          <Logo size={72} />
+        </View>
+        <Text className="mt-4 text-2xl font-bold text-white">Community Finance</Text>
+        <Text className="mt-1 text-sm text-indigo-100">
+          Transparent finances for your community
+        </Text>
+      </View>
+
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
       >
         <ScrollView
-          contentContainerClassName="flex-grow justify-center px-6 py-10"
+          contentContainerClassName="flex-grow px-6 pb-8"
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          {/* Brand */}
-          <View className="mb-10 items-center">
-            <View className="mb-5">
-              <Logo size={88} />
-            </View>
-            <Text className="text-[28px] font-bold leading-9 text-on-surface dark:text-on-surface-d">
-              Community Finance
+          {/* Form card overlapping the hero */}
+          <View className="-mt-6 rounded-3xl bg-surface-lowest p-5 shadow-lg">
+            <Text className="text-lg font-bold text-on-surface">Welcome back</Text>
+            <Text className="mb-4 mt-0.5 text-sm text-on-surface-variant">
+              Sign in with your registered mobile number
             </Text>
-            <Text className="mt-1 text-sm text-on-surface-variant dark:text-on-surface-variant-d">
-              Transparent finances for your community
-            </Text>
-          </View>
 
-          {/* M3 form surface */}
-          <View className="rounded-m3-xl bg-surface-container p-5 dark:bg-surface-container-d">
             <TextInput
               mode="outlined"
               label="Mobile number"
@@ -101,28 +105,43 @@ export default function LoginScreen() {
                   onPress={() => setShowPassword((v) => !v)}
                 />
               }
+              onSubmitEditing={() => void onSubmit()}
               testID="login-password"
             />
             <HelperText type="error" visible={Boolean(error)} testID="login-error">
               {error ?? ''}
             </HelperText>
+
             <Button
               mode="contained"
               onPress={() => void onSubmit()}
               loading={submitting}
               disabled={submitting}
-              contentStyle={{ height: 48 }}
+              contentStyle={{ height: 50, flexDirection: 'row-reverse' }}
+              icon="arrow-right"
               testID="login-submit"
             >
               Sign in
             </Button>
           </View>
 
-          <Text className="mt-6 text-center text-xs text-on-surface-variant dark:text-on-surface-variant-d">
-            Forgot your password? Contact your community admin for a reset.
-          </Text>
+          <View className="mt-5 flex-row items-center justify-center gap-1.5 rounded-2xl bg-surface-container px-4 py-3">
+            <MaterialCommunityIcons name="shield-key-outline" size={15} color="#5D5C72" />
+            <Text className="text-xs text-on-surface-variant">
+              Forgot your password? Ask your community admin to reset it.
+            </Text>
+          </View>
+
+          <View className="mt-auto items-center pt-8">
+            <View className="flex-row items-center gap-1.5">
+              <MaterialCommunityIcons name="hammer-wrench" size={12} color="#777680" />
+              <Text className="text-xs font-semibold text-on-surface-variant">
+                Built by Setups Works
+              </Text>
+            </View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }

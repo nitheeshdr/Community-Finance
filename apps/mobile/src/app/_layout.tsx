@@ -1,26 +1,25 @@
 import { useEffect, useState } from 'react';
-import { useColorScheme } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import { colorScheme } from 'nativewind';
 import { PaperProvider } from 'react-native-paper';
 import { AuthProvider, useAuth } from '@/lib/auth-context';
-import { getScheme, paperDarkTheme, paperLightTheme } from '@/lib/theme';
-import { loadThemePref } from '@/lib/theme-pref';
+import { getScheme, paperLightTheme } from '@/lib/theme';
 import '../global.css';
 
-// Apply the saved light/dark preference before first paint.
-void loadThemePref();
-
 SplashScreen.preventAutoHideAsync();
+
+// App is light-only — lock NativeWind's scheme so `dark:` never activates.
+colorScheme.set('light');
+
+const scheme = getScheme(false);
 
 function RootNavigator() {
   const { user, loading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
-  const dark = useColorScheme() === 'dark';
-  const scheme = getScheme(dark);
 
   // Auth gate: unauthenticated users only see /login.
   useEffect(() => {
@@ -36,7 +35,7 @@ function RootNavigator() {
 
   return (
     <>
-      <StatusBar style={dark ? 'light' : 'dark'} />
+      <StatusBar style="dark" />
       <Stack
         screenOptions={{
           headerShown: false,
@@ -73,7 +72,6 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
-  const dark = useColorScheme() === 'dark';
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -84,7 +82,7 @@ export default function RootLayout() {
   );
 
   return (
-    <PaperProvider theme={dark ? paperDarkTheme : paperLightTheme}>
+    <PaperProvider theme={paperLightTheme}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <RootNavigator />

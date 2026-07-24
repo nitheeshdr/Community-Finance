@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useColorScheme } from 'react-native';
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -17,35 +16,13 @@ import { api, apiErrorMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { initials } from '@/lib/format';
 import { useUnreadCount } from '@/lib/queries';
-import { loadThemePref, setThemePref, type ThemePref } from '@/lib/theme-pref';
 import { Card, SectionTitle } from '@/components/ui';
-
-const THEME_OPTIONS: Array<{
-  value: ThemePref;
-  label: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-}> = [
-  { value: 'light', label: 'Light', icon: 'white-balance-sunny' },
-  { value: 'dark', label: 'Dark', icon: 'weather-night' },
-  { value: 'system', label: 'System', icon: 'theme-light-dark' },
-];
 
 export default function MoreScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const { data: unread } = useUnreadCount();
   const [changingPassword, setChangingPassword] = useState(false);
-  const [themePref, setThemePrefState] = useState<ThemePref | null>(null);
-  const dark = useColorScheme() === 'dark';
-
-  useEffect(() => {
-    void loadThemePref().then(setThemePrefState);
-  }, []);
-
-  async function chooseTheme(pref: ThemePref) {
-    setThemePrefState(pref);
-    await setThemePref(pref);
-  }
 
   const logoutEverywhere = useMutation({
     mutationFn: async () => {
@@ -80,43 +57,6 @@ export default function MoreScreen() {
             label={unread ? `Notifications (${unread} unread)` : 'Notifications'}
             onPress={() => router.push('/notifications')}
           />
-        </Card>
-
-        {/* Appearance — M3 segmented control */}
-        <SectionTitle>Appearance</SectionTitle>
-        <Card>
-          <View className="flex-row overflow-hidden rounded-m3-xl border border-outline-variant dark:border-outline-variant-d">
-            {THEME_OPTIONS.map((opt, i) => {
-              const selected = (themePref ?? 'system') === opt.value;
-              return (
-                <Pressable
-                  key={opt.value}
-                  onPress={() => void chooseTheme(opt.value)}
-                  className={`flex-1 flex-row items-center justify-center gap-1.5 py-2.5 ${
-                    i > 0 ? 'border-l border-outline-variant dark:border-outline-variant-d' : ''
-                  } ${selected ? 'bg-secondary-container dark:bg-secondary-container-d' : ''}`}
-                >
-                  <MaterialCommunityIcons
-                    name={selected ? 'check' : opt.icon}
-                    size={16}
-                    color={dark ? '#E2E0F9' : '#1A1A2C'}
-                  />
-                  <Text
-                    className={`text-sm ${
-                      selected
-                        ? 'font-semibold text-on-secondary-container dark:text-on-secondary-container-d'
-                        : 'text-on-surface dark:text-on-surface-d'
-                    }`}
-                  >
-                    {opt.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-          <Text className="mt-2 text-xs text-on-surface-variant dark:text-on-surface-variant-d">
-            Light forces the bright theme everywhere; System follows your phone setting.
-          </Text>
         </Card>
 
         {/* Account */}
