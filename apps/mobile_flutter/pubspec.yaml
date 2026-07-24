@@ -27,6 +27,9 @@ dependencies:
   # Utilities
   intl: ^0.20.1
 
+  # Open Razorpay hosted payment links in the browser
+  url_launcher: ^6.3.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

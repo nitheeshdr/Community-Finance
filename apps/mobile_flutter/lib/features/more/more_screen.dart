@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/config/env.dart';
+import '../about/about_screen.dart';
 import '../auth/presentation/auth_controller.dart';
+import '../notifications/notifications_screen.dart';
 
 class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
@@ -33,19 +37,26 @@ class MoreScreen extends ConsumerWidget {
             leading: const Icon(Icons.notifications_outlined),
             title: const Text('Notifications'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {},
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.new_releases_outlined),
             title: const Text("What's new"),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {},
+            trailing: const Icon(Icons.open_in_new, size: 18),
+            onTap: () => launchUrl(
+              Uri.parse('${Env.webOrigin}/changelog'),
+              mode: LaunchMode.externalApplication,
+            ),
           ),
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: const Text('About'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {},
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AboutScreen()),
+            ),
           ),
           const Divider(),
           Padding(
