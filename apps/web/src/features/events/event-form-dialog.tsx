@@ -82,7 +82,7 @@ export function EventFormDialog({
     enabled: open,
     queryFn: async () => {
       const res = await apiClient.get<ApiSuccess<MemberDto[]>>('/members', {
-        params: { page: 1, limit: 200, status: UserStatus.ACTIVE, role: UserRole.MEMBER },
+        params: { page: 1, limit: 100, status: UserStatus.ACTIVE, role: UserRole.MEMBER },
       });
       return res.data.data;
     },

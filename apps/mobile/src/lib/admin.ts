@@ -89,7 +89,7 @@ export function useMemberPicker(enabled = true) {
     enabled,
     queryFn: async () => {
       const res = await api.get<ApiSuccess<MemberDto[]>>('/members', {
-        params: { page: 1, limit: 200, status: 'ACTIVE', role: 'MEMBER' },
+        params: { page: 1, limit: 100, status: 'ACTIVE', role: 'MEMBER' },
       });
       return res.data.data;
     },
