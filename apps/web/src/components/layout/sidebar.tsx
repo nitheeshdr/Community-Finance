@@ -15,6 +15,7 @@ import {
   ScrollText,
   Settings,
   Shield,
+  Sparkles,
   TrendingUp,
   Users,
 } from 'lucide-react';
@@ -79,6 +80,7 @@ const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
         icon: Settings,
         roles: [UserRole.SUPER_ADMIN, UserRole.ADMIN],
       },
+      { href: '/changelog', label: "What's New", icon: Sparkles },
     ],
   },
 ];

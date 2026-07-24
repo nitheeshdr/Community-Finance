@@ -66,6 +66,28 @@ function RootNavigator() {
             headerShadowVisible: false,
           }}
         />
+        <Stack.Screen
+          name="about"
+          options={{
+            headerShown: true,
+            title: 'About',
+            headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: scheme.surface },
+            headerTintColor: scheme.onSurface,
+            headerShadowVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="changelog"
+          options={{
+            headerShown: true,
+            title: "What's new",
+            headerBackTitle: 'Back',
+            headerStyle: { backgroundColor: scheme.surface },
+            headerTintColor: scheme.onSurface,
+            headerShadowVisible: false,
+          }}
+        />
       </Stack>
     </>
   );

@@ -23,7 +23,8 @@ const baseHost =
   (Constants.expoConfig?.extra?.apiUrl as string | undefined) ??
   'https://finance-village-web.vercel.app';
 
-export const API_BASE = `${baseHost.replace(/\/$/, '')}${API_PREFIX}`;
+export const WEB_ORIGIN = baseHost.replace(/\/$/, '');
+export const API_BASE = `${WEB_ORIGIN}${API_PREFIX}`;
 
 let accessToken: string | null = null;
 let onUnauthorized: (() => void) | null = null;

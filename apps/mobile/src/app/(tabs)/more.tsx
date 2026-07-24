@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { api, apiErrorMessage } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { initials } from '@/lib/format';
@@ -59,6 +59,16 @@ export default function MoreScreen() {
           />
         </Card>
 
+        <SectionTitle>App</SectionTitle>
+        <Card>
+          <ActionRow
+            icon="star-four-points-outline"
+            label="What's new"
+            onPress={() => router.push('/changelog' as Href)}
+          />
+          <ActionRow icon="information-outline" label="About" onPress={() => router.push('/about' as Href)} />
+        </Card>
+
         {/* Account */}
         <SectionTitle>Account</SectionTitle>
         <Card>
@@ -96,17 +106,17 @@ export default function MoreScreen() {
         </Card>
 
         {/* Credits */}
-        <View className="mt-8 items-center gap-1">
-          <Text className="text-xs text-on-surface-variant dark:text-on-surface-variant-d">
+        <Pressable onPress={() => router.push('/about' as Href)} className="mt-8 items-center gap-1">
+          <Text className="text-xs text-on-surface-variant">
             Community Finance · transparent by design
           </Text>
           <View className="flex-row items-center gap-1.5">
             <MaterialCommunityIcons name="hammer-wrench" size={12} color="#777680" />
-            <Text className="text-xs font-semibold text-on-surface-variant dark:text-on-surface-variant-d">
+            <Text className="text-xs font-semibold text-on-surface-variant">
               Built by Setups Works
             </Text>
           </View>
-        </View>
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
