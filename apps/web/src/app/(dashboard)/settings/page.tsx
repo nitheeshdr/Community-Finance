@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DangerZone } from '@/features/settings/danger-zone';
 
 interface SettingsData {
   expenseCategories: string[];
@@ -34,7 +35,7 @@ interface SettingsData {
   language: string;
 }
 
-const VALID_TABS = ['fees', 'payments', 'categories', 'account', 'sessions'];
+const VALID_TABS = ['fees', 'payments', 'categories', 'account', 'sessions', 'danger'];
 
 export default function SettingsPage() {
   return (
@@ -64,6 +65,11 @@ function SettingsContent() {
           {isSuperAdmin && <TabsTrigger value="categories">Categories</TabsTrigger>}
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="sessions">Devices</TabsTrigger>
+          {isSuperAdmin && (
+            <TabsTrigger value="danger" className="text-destructive">
+              Danger
+            </TabsTrigger>
+          )}
         </TabsList>
 
         {isSuperAdmin && (
@@ -87,6 +93,11 @@ function SettingsContent() {
         <TabsContent value="sessions">
           <SessionSettings />
         </TabsContent>
+        {isSuperAdmin && (
+          <TabsContent value="danger">
+            <DangerZone />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

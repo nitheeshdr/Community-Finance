@@ -12,6 +12,16 @@ export interface ChangelogEntry {
 
 export const CHANGELOG: ChangelogEntry[] = [
   {
+    version: '1.5.0',
+    date: '2026-07-24',
+    title: 'Data management, searchable pickers & About',
+    changes: [
+      'Admin danger zone: clear data by section (payments, expenses, income, events, and more)',
+      'Record payment: a single searchable member picker',
+      'In-app What’s New and About pages',
+    ],
+  },
+  {
     version: '1.4.0',
     date: '2026-07-24',
     title: 'Dues tracking, reports & family groups',

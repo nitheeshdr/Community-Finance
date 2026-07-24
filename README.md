@@ -30,16 +30,21 @@ The core idea: **nothing about the community's finances is hidden.** Every membe
 
 - **Multi-tenant** — every community's data is isolated *structurally* at the repository layer, not by per-endpoint discipline
 - **Secure auth** — phone + password, 15-minute JWTs, rotating refresh tokens with theft detection, device tracking, account lockout
-- **Payments, three ways** — Razorpay AutoPay subscriptions, one-time Razorpay pay links, and manual cash/UPI with an approval queue — automatic PDF receipts for all
-- **Events with smart funding** — pick per event:
-  - **From community balance** — funded from the shared balance
+- **Payments, three ways** — Razorpay AutoPay subscriptions, one-time Razorpay pay links (pay any due from the app, alongside AutoPay), and manual cash/UPI with an approval queue — automatic PDF receipts for all
+- **Events with three funding modes** — pick per event:
+  - **From community balance** — funded from the shared balance (may run negative on overspend)
   - **Split among members** — a budget divided equally, auto-recalculated whenever membership changes
-  - **Collect payment** — a fixed amount from each chosen member, each with a Pay button
+  - **Collect payment** — a fixed amount from each chosen member, each with a Pay button; the member set and amount stay fixed
 - **Expenses & income** — approval workflow, mandatory bills above a threshold, live budget tracking, donations and sponsorships
-- **Reports & analytics** — daily to yearly, immutable month-end snapshots, correction adjustments, and advanced exports (any dataset, custom range + filters) to PDF / Excel / CSV
+- **Monthly dues tracking** — see who has paid and who hasn't for any month, and a per-member ledger of every month paid or unpaid with receipts
+- **Members** — CRUD, statuses, **bulk CSV import**, and **group by family / household**
+- **Reports & analytics** — daily to yearly, immutable month-end snapshots, correction adjustments, and advanced exports (any dataset, custom range + filters) to PDF / Excel / CSV; viewable and downloadable from the mobile app too
+- **Admin from your phone** — a role-gated admin tab: members, approvals, create/edit events, record payments/expenses/income, announcements, dues, and reports
 - **Transparency & search** — global command-palette search; every financial record visible to members
 - **Append-only audit log** — mutation is blocked at the schema level; records actor, before/after, IP, device
 - **Realtime notifications** — Pusher channels and an in-app center; payment, event, budget, and announcement alerts
+- **Data management** — a super-admin danger zone to clear data by section (payments, expenses, income, events, and more); audit logs and closed snapshots are never touched
+- **Release notes** — an in-app What's New (WebView) and About page, backed by a public changelog
 - **Zero-cron scheduling** — daily housekeeping (reminders, overdue marking, monthly close) self-triggers; no paid infrastructure
 
 ## The two applications
@@ -233,13 +238,14 @@ Versioned REST under `/api/v1`.
 | Area | Endpoints |
 |---|---|
 | **Auth** | login · refresh (rotating) · logout(-all) · sessions · change-password |
-| **Members** | CRUD · status · reset-password · bulk CSV import |
+| **Members** | CRUD · status · reset-password · bulk CSV import · ledger |
+| **Dues** | who has paid / not paid a given month |
 | **Payments** | list · manual entry · review · refund · pay (Razorpay link) · delete |
 | **Subscriptions** | create/cancel/resume AutoPay · webhook (idempotent) |
 | **Events** | CRUD · status · splits · split-history · pay |
 | **Expenses / Income / Documents** | CRUD · approval · signed uploads |
 | **Reports** | live · snapshots · adjustments · export · advanced export |
-| **Admin** | audit-logs · communities · notifications · settings · search · cron |
+| **Admin** | audit-logs · communities · notifications · settings · search · cron · clear-data |
 
 Full reference: [`docs/API.md`](docs/API.md).
 

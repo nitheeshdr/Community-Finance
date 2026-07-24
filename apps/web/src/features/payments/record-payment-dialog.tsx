@@ -1,17 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  PaymentMethod,
-  PaymentType,
-  type MemberDto,
-} from '@community-finance/shared';
-import { apiClient } from '@/lib/api-client';
-import type { ApiSuccess } from '@community-finance/shared';
-import { useQuery } from '@tanstack/react-query';
+import { PaymentMethod, PaymentType } from '@community-finance/shared';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -31,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { MemberCombobox } from '@/components/shared/member-combobox';
 import { useRecordPayment } from './api';
 
 const formSchema = z.object({
@@ -61,20 +55,6 @@ export function RecordPaymentDialog({
   defaultEventId?: string;
 }) {
   const recordMutation = useRecordPayment();
-  const [memberSearch, setMemberSearch] = useState('');
-
-  // Lightweight member picker.
-  const { data: memberData } = useQuery({
-    queryKey: ['members', 'picker', memberSearch],
-    queryFn: async () => {
-      const res = await apiClient.get<ApiSuccess<MemberDto[]>>('/members', {
-        params: { page: 1, limit: 50, ...(memberSearch ? { search: memberSearch } : {}) },
-      });
-      return res.data.data;
-    },
-    enabled: open,
-  });
-  const members = memberData ?? [];
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -134,27 +114,10 @@ export function RecordPaymentDialog({
         <form onSubmit={onSubmit} className="space-y-4" noValidate>
           <div className="space-y-2">
             <Label>Member</Label>
-            <Input
-              placeholder="Search member…"
-              value={memberSearch}
-              onChange={(e) => setMemberSearch(e.target.value)}
-              className="mb-1"
-            />
-            <Select
+            <MemberCombobox
               value={form.watch('memberId')}
-              onValueChange={(v) => form.setValue('memberId', v, { shouldValidate: true })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select member" />
-              </SelectTrigger>
-              <SelectContent>
-                {members.map((m) => (
-                  <SelectItem key={m.id} value={m.id}>
-                    {m.name} · {m.phone}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={(v) => form.setValue('memberId', v, { shouldValidate: true })}
+            />
             {form.formState.errors.memberId && (
               <p className="text-xs text-destructive">{form.formState.errors.memberId.message}</p>
             )}

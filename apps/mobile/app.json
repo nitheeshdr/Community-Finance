@@ -2,7 +2,7 @@
   "expo": {
     "name": "Community Finance",
     "slug": "community-finance",
-    "version": "0.1.0",
+    "version": "1.5.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "communityfinance",
