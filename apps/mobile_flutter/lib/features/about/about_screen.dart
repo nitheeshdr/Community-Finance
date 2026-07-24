@@ -3,6 +3,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config/env.dart';
 import '../../shared/widgets/brand_logo.dart';
+import '../../shared/widgets/settings_group.dart';
 
 /// App version — kept in sync with pubspec `version`.
 const String kAppVersion = '1.6.0';
@@ -50,29 +51,27 @@ class AboutScreen extends StatelessWidget {
           const SizedBox(height: 4),
           Center(child: Text('Setups Works', style: theme.textTheme.titleLarge)),
           const SizedBox(height: 16),
-          Card(
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.language),
-                  title: const Text('setups.works'),
-                  onTap: () => _open('https://setups.works'),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.mail_outline),
-                  title: const Text('info@setups.works'),
-                  onTap: () => _open('mailto:info@setups.works'),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.new_releases_outlined),
-                  title: const Text("What's new"),
-                  trailing: const Icon(Icons.open_in_new, size: 18),
-                  onTap: () => _open('${Env.webOrigin}/changelog'),
-                ),
-              ],
-            ),
+          GroupCard(
+            children: [
+              GroupTile(
+                icon: Icons.language,
+                title: 'setups.works',
+                trailing: const Icon(Icons.open_in_new, size: 18),
+                onTap: () => _open('https://setups.works'),
+              ),
+              GroupTile(
+                icon: Icons.mail_outline,
+                title: 'info@setups.works',
+                trailing: const Icon(Icons.open_in_new, size: 18),
+                onTap: () => _open('mailto:info@setups.works'),
+              ),
+              GroupTile(
+                icon: Icons.new_releases_outlined,
+                title: "What's new",
+                trailing: const Icon(Icons.open_in_new, size: 18),
+                onTap: () => _open('${Env.webOrigin}/changelog'),
+              ),
+            ],
           ),
         ],
       ),
