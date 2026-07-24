@@ -43,7 +43,7 @@ export default function AdminHubScreen() {
         }
       >
         <View className="mb-1 mt-2 flex-row items-center gap-2">
-          <MaterialCommunityIcons name="shield-check" size={22} color="#4F46E5" />
+          <MaterialCommunityIcons name="shield-check" size={22} color="#984447" />
           <Text className="text-xl font-bold text-on-surface">Admin</Text>
         </View>
         <Text className="mb-4 text-sm text-on-surface-variant">
@@ -54,7 +54,7 @@ export default function AdminHubScreen() {
         <Link href={'/admin/approvals' as Href} asChild>
           <Pressable className="flex-row items-center gap-3 rounded-m3-lg bg-primary-container p-4 active:opacity-80">
             <View className="h-11 w-11 items-center justify-center rounded-full bg-white/40">
-              <MaterialCommunityIcons name="check-decagram-outline" size={22} color="#3B32C8" />
+              <MaterialCommunityIcons name="check-decagram-outline" size={22} color="#7A2E33" />
             </View>
             <View className="flex-1">
               <Text className="text-sm font-semibold text-on-primary-container">
@@ -70,7 +70,7 @@ export default function AdminHubScreen() {
                 <Text className="text-xs font-bold text-white">{payCount + expCount}</Text>
               </View>
             )}
-            <MaterialCommunityIcons name="chevron-right" size={22} color="#3B32C8" />
+            <MaterialCommunityIcons name="chevron-right" size={22} color="#7A2E33" />
           </Pressable>
         </Link>
 
@@ -83,7 +83,7 @@ export default function AdminHubScreen() {
                 style={{ width: '31%' }}
               >
                 <View className="mb-2 h-11 w-11 items-center justify-center rounded-full bg-primary-container">
-                  <MaterialCommunityIcons name={a.icon} size={20} color="#4F46E5" />
+                  <MaterialCommunityIcons name={a.icon} size={20} color="#984447" />
                 </View>
                 <Text className="text-center text-xs font-medium text-on-surface">{a.label}</Text>
               </Pressable>

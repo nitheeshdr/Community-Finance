@@ -123,12 +123,12 @@ const TYPE_META: Partial<
   [NotificationType.BUDGET_UPDATED]: {
     icon: 'chart-donut',
     bg: 'bg-primary-container dark:bg-primary-container-d',
-    color: '#4F46E5',
+    color: '#984447',
   },
   [NotificationType.EVENT_CREATED]: {
     icon: 'calendar-star',
     bg: 'bg-primary-container dark:bg-primary-container-d',
-    color: '#4F46E5',
+    color: '#984447',
   },
 };
 

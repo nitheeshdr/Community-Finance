@@ -18,9 +18,9 @@ function formatDate(d: string) {
  */
 export default function ChangelogPage() {
   return (
-    <div style={{ backgroundColor: '#FCF8FF', minHeight: '100vh' }}>
+    <div style={{ backgroundColor: '#FFF8F7', minHeight: '100vh' }}>
       {/* Hero */}
-      <header className="bg-[#4F46E5] px-6 pb-10 pt-12 text-center">
+      <header className="bg-[#984447] px-6 pb-10 pt-12 text-center">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-white/15">
           <svg width="40" height="40" viewBox="0 0 1024 1024" aria-hidden>
             <circle
@@ -32,7 +32,7 @@ export default function ChangelogPage() {
               strokeOpacity="0.3"
               strokeWidth="34"
             />
-            <circle cx="512" cy="172" r="46" fill="#B9F6CA" />
+            <circle cx="512" cy="172" r="46" fill="#FFD37A" />
             <text
               x="512"
               y="700"
@@ -47,14 +47,14 @@ export default function ChangelogPage() {
           </svg>
         </div>
         <h1 className="mt-4 text-2xl font-bold text-white">What&rsquo;s new</h1>
-        <p className="mt-1 text-sm text-indigo-100">Every release, newest first</p>
+        <p className="mt-1 text-sm text-[#FFDAD9]">Every release, newest first</p>
       </header>
 
       {/* Timeline */}
       <main className="mx-auto max-w-2xl px-5 pb-16 pt-6">
         <div className="relative space-y-4 pl-6">
           {/* vertical line */}
-          <span className="absolute bottom-2 left-[7px] top-3 w-0.5 bg-indigo-200" aria-hidden />
+          <span className="absolute bottom-2 left-[7px] top-3 w-0.5 bg-[#F1C6C4]" aria-hidden />
 
           {CHANGELOG.map((entry, idx) => (
             <section
@@ -63,15 +63,15 @@ export default function ChangelogPage() {
             >
               {/* dot */}
               <span
-                className="absolute -left-[23px] top-6 h-4 w-4 rounded-full border-4 border-[#FCF8FF] bg-[#4F46E5]"
+                className="absolute -left-[23px] top-6 h-4 w-4 rounded-full border-4 border-[#FFF8F7] bg-[#984447]"
                 aria-hidden
               />
               <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-indigo-100 px-2.5 py-0.5 text-sm font-bold text-[#4F46E5]">
+                <span className="rounded-full bg-[#FFDAD9] px-2.5 py-0.5 text-sm font-bold text-[#984447]">
                   v{entry.version}
                 </span>
                 {idx === 0 && (
-                  <span className="rounded-full bg-[#B9F6CA] px-2 py-0.5 text-xs font-semibold text-[#00210A]">
+                  <span className="rounded-full bg-[#FFDEA1] px-2 py-0.5 text-xs font-semibold text-[#271900]">
                     Latest
                   </span>
                 )}
@@ -82,7 +82,7 @@ export default function ChangelogPage() {
                 {entry.changes.map((c, i) => (
                   <li key={i} className="flex gap-2.5 text-sm text-slate-600">
                     <svg
-                      className="mt-0.5 h-4 w-4 shrink-0 text-[#4F46E5]"
+                      className="mt-0.5 h-4 w-4 shrink-0 text-[#984447]"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                       aria-hidden

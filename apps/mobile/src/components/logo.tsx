@@ -2,8 +2,8 @@ import { View } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Rect, Stop, Text as SvgText } from 'react-native-svg';
 
 /**
- * Brand mark — indigo M3 squircle, rupee glyph, community ring with a
- * mint "member" dot. Same artwork as the app icon (assets/brand).
+ * Brand mark — brick-rose M3 squircle, rupee glyph, community ring with a
+ * gold "member" dot. Same artwork as the app icon (assets/brand).
  */
 export function Logo({ size = 64 }: { size?: number }) {
   return (
@@ -11,8 +11,8 @@ export function Logo({ size = 64 }: { size?: number }) {
       <Svg width={size} height={size} viewBox="0 0 1024 1024">
         <Defs>
           <LinearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
-            <Stop offset="0" stopColor="#5B54F0" />
-            <Stop offset="1" stopColor="#3B32C8" />
+            <Stop offset="0" stopColor="#B0555A" />
+            <Stop offset="1" stopColor="#7A2E33" />
           </LinearGradient>
         </Defs>
         <Rect width="1024" height="1024" rx="236" fill="url(#lg)" />
@@ -25,7 +25,7 @@ export function Logo({ size = 64 }: { size?: number }) {
           strokeOpacity="0.16"
           strokeWidth="34"
         />
-        <Circle cx="512" cy="172" r="46" fill="#B9F6CA" />
+        <Circle cx="512" cy="172" r="46" fill="#FFD37A" />
         <SvgText
           x="512"
           y="700"

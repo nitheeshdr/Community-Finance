@@ -102,7 +102,7 @@ function EventCard({ event }: { event: EventDto }) {
             <Text className="text-xs font-medium text-primary dark:text-primary-d">
               View details
             </Text>
-            <MaterialCommunityIcons name="chevron-right" size={16} color="#4f46e5" />
+            <MaterialCommunityIcons name="chevron-right" size={16} color="#984447" />
           </View>
         </Card>
       </Pressable>

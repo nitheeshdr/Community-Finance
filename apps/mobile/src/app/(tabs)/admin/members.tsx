@@ -23,7 +23,7 @@ export default function AdminMembersScreen() {
         options={{
           headerRight: () => (
             <Pressable onPress={() => router.push('/admin/add-member' as Href)} hitSlop={8}>
-              <MaterialCommunityIcons name="account-plus" size={22} color="#4F46E5" />
+              <MaterialCommunityIcons name="account-plus" size={22} color="#984447" />
             </Pressable>
           ),
         }}

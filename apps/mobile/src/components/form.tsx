@@ -156,7 +156,7 @@ export function PickerField({
                     ) : null}
                   </View>
                   {item.value === value && (
-                    <MaterialCommunityIcons name="check" size={18} color="#4F46E5" />
+                    <MaterialCommunityIcons name="check" size={18} color="#984447" />
                   )}
                 </Pressable>
               )}

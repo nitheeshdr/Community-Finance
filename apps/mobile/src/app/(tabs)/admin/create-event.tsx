@@ -239,7 +239,7 @@ export default function CreateEventScreen() {
                         <MaterialCommunityIcons
                           name={included ? 'checkbox-marked' : 'checkbox-blank-outline'}
                           size={20}
-                          color={included ? '#4F46E5' : '#777680'}
+                          color={included ? '#984447' : '#777680'}
                         />
                         <Text
                           className={`flex-1 text-sm ${included ? 'text-on-surface' : 'text-on-surface-variant line-through'}`}
