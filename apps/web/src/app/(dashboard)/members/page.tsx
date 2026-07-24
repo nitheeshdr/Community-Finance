@@ -14,6 +14,7 @@ import {
   UserMinus,
   UserX,
   Users,
+  Users2,
 } from 'lucide-react';
 import {
   UserRole,
@@ -88,10 +89,32 @@ export default function MembersPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<UserStatus | 'ALL'>('ALL');
+  const [grouped, setGrouped] = useState(false);
   const debouncedSearch = useDebounced(search);
 
-  const { data, isLoading } = useMembers({ page, search: debouncedSearch, status });
+  const { data, isLoading } = useMembers({
+    page: grouped ? 1 : page,
+    search: debouncedSearch,
+    status,
+    limit: grouped ? 100 : 20,
+  });
   const members = data?.data ?? [];
+
+  // Group members by family/household for the grouped view.
+  const familyGroups = (() => {
+    const map = new Map<string, typeof members>();
+    for (const m of members) {
+      const key = m.familyGroup?.trim() || '__none__';
+      const list = map.get(key) ?? [];
+      list.push(m);
+      map.set(key, list);
+    }
+    const named = [...map.entries()]
+      .filter(([k]) => k !== '__none__')
+      .sort((a, b) => a[0].localeCompare(b[0]));
+    const none = map.get('__none__');
+    return { named, none: none ?? [] };
+  })();
   const meta = data?.meta;
 
   const [formOpen, setFormOpen] = useState(false);
@@ -157,6 +180,14 @@ export default function MembersPage() {
                 <SelectItem value={UserStatus.SUSPENDED}>Suspended</SelectItem>
               </SelectContent>
             </Select>
+            <Button
+              variant={grouped ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setGrouped((v) => !v)}
+            >
+              <Users2 />
+              Group by family
+            </Button>
           </div>
 
           {isLoading ? (
@@ -175,34 +206,59 @@ export default function MembersPage() {
                   : 'Add your first community member to get started.'
               }
             />
+          ) : grouped ? (
+            <div className="space-y-6">
+              {familyGroups.named.map(([family, list]) => (
+                <div key={family}>
+                  <div className="mb-2 flex items-center gap-2">
+                    <Users2 className="h-4 w-4 text-primary" />
+                    <h3 className="text-sm font-semibold">{family}</h3>
+                    <span className="text-xs text-muted-foreground">
+                      {list.length} member{list.length === 1 ? '' : 's'}
+                    </span>
+                  </div>
+                  <MemberTable
+                    members={list}
+                    isAdmin={isAdmin}
+                    onEdit={(m) => {
+                      setEditing(m);
+                      setFormOpen(true);
+                    }}
+                    onDelete={setDeleting}
+                  />
+                </div>
+              ))}
+              {familyGroups.none.length > 0 && (
+                <div>
+                  <div className="mb-2 flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-muted-foreground">No family group</h3>
+                    <span className="text-xs text-muted-foreground">
+                      {familyGroups.none.length} member{familyGroups.none.length === 1 ? '' : 's'}
+                    </span>
+                  </div>
+                  <MemberTable
+                    members={familyGroups.none}
+                    isAdmin={isAdmin}
+                    onEdit={(m) => {
+                      setEditing(m);
+                      setFormOpen(true);
+                    }}
+                    onDelete={setDeleting}
+                  />
+                </div>
+              )}
+            </div>
           ) : (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Member</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Member since</TableHead>
-                    {isAdmin && <TableHead className="w-10" />}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {members.map((m) => (
-                    <MemberRow
-                      key={m.id}
-                      member={m}
-                      isAdmin={isAdmin}
-                      onEdit={() => {
-                        setEditing(m);
-                        setFormOpen(true);
-                      }}
-                      onDelete={() => setDeleting(m)}
-                    />
-                  ))}
-                </TableBody>
-              </Table>
+              <MemberTable
+                members={members}
+                isAdmin={isAdmin}
+                onEdit={(m) => {
+                  setEditing(m);
+                  setFormOpen(true);
+                }}
+                onDelete={setDeleting}
+              />
               {meta && <PaginationControls meta={meta} onPageChange={setPage} />}
             </>
           )}
@@ -213,6 +269,44 @@ export default function MembersPage() {
       <BulkImportDialog open={bulkOpen} onOpenChange={setBulkOpen} />
       <DeleteMemberDialog member={deleting} onClose={() => setDeleting(null)} />
     </div>
+  );
+}
+
+function MemberTable({
+  members,
+  isAdmin,
+  onEdit,
+  onDelete,
+}: {
+  members: MemberDto[];
+  isAdmin: boolean;
+  onEdit: (m: MemberDto) => void;
+  onDelete: (m: MemberDto) => void;
+}) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Member</TableHead>
+          <TableHead>Phone</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Role</TableHead>
+          <TableHead>Member since</TableHead>
+          {isAdmin && <TableHead className="w-10" />}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {members.map((m) => (
+          <MemberRow
+            key={m.id}
+            member={m}
+            isAdmin={isAdmin}
+            onEdit={() => onEdit(m)}
+            onDelete={() => onDelete(m)}
+          />
+        ))}
+      </TableBody>
+    </Table>
   );
 }
 

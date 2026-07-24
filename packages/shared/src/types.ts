@@ -114,6 +114,7 @@ export interface MemberDto {
   role: UserRole;
   status: UserStatus;
   address?: string;
+  familyGroup?: string;
   family: FamilyMemberDto[];
   profileImage?: string;
   /** Masked (XXXX-XXXX-1234); full value never leaves the server. */

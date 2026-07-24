@@ -57,6 +57,8 @@ Both are driven by **one type-safe contract** — the same Zod schemas, DTOs, en
 
 The system is a **Turborepo monorepo** with two front-ends and one backend. The Next.js app is *both* the admin dashboard and the REST API; the Expo app is a pure client of that API. There is exactly one source of truth for every type, rule, and number.
 
+### High-Level Topology
+
 ```
                             ┌──────────────────────────────────────────┐
                             │              packages/shared               │
@@ -115,6 +117,40 @@ route.ts  →  service  →  repository  →  Mongoose model
 - **Models** — Mongoose schemas with compound `{ communityId, … }` indexes. Two collections (audit log, closed-period snapshots) block updates and deletes at the schema level — they are append-only by construction.
 
 Cross-cutting guarantees: a uniform `{ success, data, error, meta }` envelope; a typed `AppError` hierarchy mapped to HTTP codes by one global handler; and **all money stored as integer paise** to eliminate floating-point drift.
+
+### Code Execution Pipeline
+
+A single request — say a member paying an event share from the phone — flows through the stack in one deterministic sequence:
+
+```
+ 1. Client            mobile/web calls  POST /api/v1/events/:id/pay
+                      with  Authorization: Bearer <accessToken>
+        │
+ 2. withApi()         connect DB (cached) → rate-limit (Mongo window)
+    middleware        → verify JWT → check role → parse body/query with Zod
+                      → open AsyncLocalStorage request context (actor, ip, device)
+        │
+ 3. Route handler     resolves the service from the DI container, delegates
+        │
+ 4. Service           business rules run here:
+                        • validate the member owes a share
+                        • create/return a Razorpay payment link
+                        • (on webhook) settlement pipeline:
+                          income row → receipt PDF → split credit
+                          → notification → audit entry
+        │
+ 5. Repository         BaseRepository injects { communityId } into every
+                      query/write — tenant isolation is automatic
+        │
+ 6. Model             Mongoose persists to the tenant-scoped collection
+        │
+ 7. Side effects      Cloudinary (receipt) · Pusher (realtime) · AuditLog
+        │
+ 8. Response          uniform  { success, data, meta }  envelope back to the
+                      client; a thrown AppError maps to its HTTP status instead
+```
+
+Every mutation that changes money — manual approval on the web, a Pay link on mobile, or an AutoPay webhook — re-enters the **same** service-layer settlement pipeline at step 4, so the two front-ends can never disagree on the numbers.
 
 ### Web app — dashboard and API in one deployment
 

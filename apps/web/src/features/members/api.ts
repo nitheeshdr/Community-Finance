@@ -21,6 +21,7 @@ export interface MemberFilters {
   page: number;
   search?: string;
   status?: UserStatus | 'ALL';
+  limit?: number;
 }
 
 const KEYS = {
@@ -36,7 +37,7 @@ export function useMembers(filters: MemberFilters) {
       const res = await apiClient.get<ApiSuccess<MemberDto[]>>('/members', {
         params: {
           page: filters.page,
-          limit: 20,
+          limit: filters.limit ?? 20,
           ...(filters.search ? { search: filters.search } : {}),
           ...(filters.status && filters.status !== 'ALL' ? { status: filters.status } : {}),
         },

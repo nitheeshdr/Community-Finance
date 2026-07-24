@@ -20,6 +20,8 @@ export const createMemberSchema = z.object({
     .regex(/\d/, 'Password must contain a number'),
   role: z.enum([UserRole.ADMIN, UserRole.MEMBER]).default(UserRole.MEMBER),
   address: z.string().trim().max(500).optional(),
+  /** Household grouping (e.g. "Kumar Family"). Members sharing it are grouped. */
+  familyGroup: z.string().trim().max(100).optional(),
   family: z.array(familyMemberSchema).max(20).default([]),
   aadhaar: z
     .string()
@@ -42,6 +44,7 @@ export const memberListQuerySchema = paginationQuerySchema.extend({
   search: z.string().trim().max(100).optional(),
   status: z.nativeEnum(UserStatus).optional(),
   role: z.nativeEnum(UserRole).optional(),
+  familyGroup: z.string().trim().max(100).optional(),
 });
 
 export const memberIdParamSchema = z.object({ id: objectIdSchema });

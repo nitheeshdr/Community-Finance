@@ -37,6 +37,7 @@ const formSchema = z.object({
   password: z.string().optional(),
   role: z.enum([UserRole.ADMIN, UserRole.MEMBER]),
   address: z.string().trim().max(500).optional(),
+  familyGroup: z.string().trim().max(100).optional(),
   aadhaar: z
     .string()
     .regex(/^\d{12}$/, 'Aadhaar must be 12 digits')
@@ -81,6 +82,7 @@ export function MemberFormDialog({
         password: '',
         role: (member?.role as UserRole.ADMIN | UserRole.MEMBER) ?? UserRole.MEMBER,
         address: member?.address ?? '',
+        familyGroup: member?.familyGroup ?? '',
         aadhaar: '',
       });
     }
@@ -92,6 +94,7 @@ export function MemberFormDialog({
       phone: values.phone,
       role: values.role,
       address: values.address || undefined,
+      familyGroup: values.familyGroup || undefined,
       aadhaar: values.aadhaar || undefined,
     };
     if (isEdit && member) {
@@ -172,6 +175,15 @@ export function MemberFormDialog({
           <div className="space-y-2">
             <Label htmlFor="m-address">Address</Label>
             <Textarea id="m-address" rows={2} {...form.register('address')} />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="m-family">Family / household (optional)</Label>
+            <Input
+              id="m-family"
+              placeholder="e.g. Kumar Family — members sharing this are grouped"
+              {...form.register('familyGroup')}
+            />
           </div>
 
           <div className="space-y-2">

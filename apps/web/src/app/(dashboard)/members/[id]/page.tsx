@@ -116,6 +116,13 @@ export default function MemberDetailPage({
             <CardTitle className="text-sm">Family</CardTitle>
           </CardHeader>
           <CardContent>
+            {member.familyGroup && (
+              <div className="mb-3 flex items-center gap-2 rounded-md bg-muted/50 px-3 py-2">
+                <Users className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">{member.familyGroup}</span>
+                <span className="text-xs text-muted-foreground">household</span>
+              </div>
+            )}
             {member.family.length === 0 ? (
               <p className="text-sm text-muted-foreground">No family members recorded.</p>
             ) : (

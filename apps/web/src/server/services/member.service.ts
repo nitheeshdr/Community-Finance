@@ -58,6 +58,7 @@ export class MemberService {
     if (query.status) filter.status = query.status;
     if (query.role) filter.role = query.role;
     else filter.role = { $in: [UserRole.MEMBER, UserRole.ADMIN] };
+    if (query.familyGroup) filter.familyGroup = query.familyGroup;
     if (query.search) {
       filter.$or = [
         { name: { $regex: escapeRegex(query.search), $options: 'i' } },
@@ -100,6 +101,7 @@ export class MemberService {
       role: input.role,
       status: UserStatus.ACTIVE,
       address: input.address,
+      familyGroup: input.familyGroup,
       family: input.family,
       profileImage: input.profileImage,
       memberSince: input.memberSince ?? new Date(),
@@ -362,6 +364,7 @@ export function toMemberDto(user: UserEntity): MemberDto {
     role: u.role as MemberDto['role'],
     status: u.status as MemberDto['status'],
     address: u.address ?? undefined,
+    familyGroup: u.familyGroup ?? undefined,
     family: (u.family ?? []).map((f) => ({
       name: f.name,
       relation: f.relation,

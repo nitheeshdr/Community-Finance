@@ -33,6 +33,8 @@ const userSchema = new Schema(
       default: UserStatus.ACTIVE,
     },
     address: { type: String, maxlength: 500 },
+    /** Household/family group name — members sharing it are grouped. */
+    familyGroup: { type: String, maxlength: 100, trim: true },
     family: { type: [familyMemberSchema], default: [] },
     profileImage: { type: String },
     /** AES-256-GCM encrypted; never returned by default. */
@@ -54,6 +56,7 @@ userSchema.index(
   { unique: true, partialFilterExpression: { deletedAt: null } }
 );
 userSchema.index({ communityId: 1, status: 1, role: 1 });
+userSchema.index({ communityId: 1, familyGroup: 1 });
 userSchema.index({ communityId: 1, name: 'text' });
 
 export type UserDoc = InferSchemaType<typeof userSchema>;
