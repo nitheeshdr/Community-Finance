@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.communityfinance.app"
+      "bundleIdentifier": "com.setupsworks.finance"
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +18,7 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "package": "com.communityfinance.app",
+      "package": "com.setupsworks.finance",
       "predictiveBackGestureEnabled": false
     },
     "web": {
