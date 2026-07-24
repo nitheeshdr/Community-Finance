@@ -1,6 +1,5 @@
-import { Platform, View } from 'react-native';
+import { View } from 'react-native';
 import { Tabs } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { UserRole } from '@community-finance/shared';
 import { useAuth } from '@/lib/auth-context';
@@ -40,13 +39,8 @@ function NavIcon({
 
 export default function TabsLayout() {
   const s = getScheme(false);
-  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const isAdmin = user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.ADMIN;
-
-  // Floating navigation bar: detached from the screen edges, rounded, and
-  // elevated so content scrolls beneath it (Material 3 floating nav bar).
-  const bottomGap = Math.max(insets.bottom, 12);
 
   const screenIcon =
     (outline: IconName, filled: IconName) =>
@@ -66,32 +60,13 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarActiveTintColor: s.onSecondaryContainer,
         tabBarInactiveTintColor: s.onSurfaceVariant,
-        // Let the floating bar overlay content; screens add their own
-        // bottom padding so nothing hides permanently behind it.
         tabBarStyle: {
-          position: 'absolute',
-          left: 16,
-          right: 16,
-          bottom: bottomGap,
-          height: 68,
-          borderRadius: 34,
-          paddingTop: 10,
-          paddingBottom: 10,
-          backgroundColor: s.surfaceContainerHigh,
+          backgroundColor: s.surfaceContainer,
           borderTopWidth: 0,
-          elevation: 8,
-          shadowColor: '#000000',
-          shadowOpacity: 0.14,
-          shadowRadius: 14,
-          shadowOffset: { width: 0, height: 6 },
+          height: 80,
+          paddingTop: 8,
         },
-        tabBarItemStyle: { paddingTop: 2 },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600', marginTop: 2 },
-        // Push scene content above the floating bar so the last rows clear it.
-        sceneStyle: {
-          backgroundColor: s.surface,
-          paddingBottom: 68 + bottomGap + (Platform.OS === 'ios' ? 8 : 12),
-        },
+        tabBarLabelStyle: { fontSize: 12, fontWeight: '600', marginTop: 4 },
       }}
     >
       <Tabs.Screen

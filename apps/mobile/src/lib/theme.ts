@@ -91,9 +91,32 @@ export function getScheme(dark: boolean): M3Scheme {
   return (dark ? m3.dark : m3.light) as M3Scheme;
 }
 
+/**
+ * Material 3 Expressive typography — bolder, tighter display & headline
+ * type for stronger emphasis. Applied to every Paper `Text` variant, so
+ * the expressive scale lands on all screens at once.
+ */
+const expressiveFonts = {
+  ...MD3LightTheme.fonts,
+  displayLarge: { ...MD3LightTheme.fonts.displayLarge, fontWeight: '800' as const, letterSpacing: -0.5 },
+  displayMedium: { ...MD3LightTheme.fonts.displayMedium, fontWeight: '800' as const, letterSpacing: -0.5 },
+  displaySmall: { ...MD3LightTheme.fonts.displaySmall, fontWeight: '800' as const, letterSpacing: -0.25 },
+  headlineLarge: { ...MD3LightTheme.fonts.headlineLarge, fontWeight: '800' as const },
+  headlineMedium: { ...MD3LightTheme.fonts.headlineMedium, fontWeight: '700' as const },
+  headlineSmall: { ...MD3LightTheme.fonts.headlineSmall, fontWeight: '700' as const },
+  titleLarge: { ...MD3LightTheme.fonts.titleLarge, fontWeight: '700' as const },
+  titleMedium: { ...MD3LightTheme.fonts.titleMedium, fontWeight: '600' as const },
+  labelLarge: { ...MD3LightTheme.fonts.labelLarge, fontWeight: '700' as const },
+};
+
+// Expressive shapes use larger corner radii across components.
+const EXPRESSIVE_ROUNDNESS = 6;
+
 /** React Native Paper MD3 themes wired to the same palette. */
 export const paperLightTheme: MD3Theme = {
   ...MD3LightTheme,
+  roundness: EXPRESSIVE_ROUNDNESS,
+  fonts: expressiveFonts,
   colors: {
     ...MD3LightTheme.colors,
     primary: m3.light.primary,
@@ -123,6 +146,8 @@ export const paperLightTheme: MD3Theme = {
 
 export const paperDarkTheme: MD3Theme = {
   ...MD3DarkTheme,
+  roundness: EXPRESSIVE_ROUNDNESS,
+  fonts: { ...expressiveFonts },
   colors: {
     ...MD3DarkTheme.colors,
     primary: m3.dark.primary,

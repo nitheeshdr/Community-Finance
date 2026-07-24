@@ -42,12 +42,13 @@ module.exports = {
         'on-warning-container': { DEFAULT: '#261A00', d: '#FFDF9E' },
       },
       borderRadius: {
-        // M3 shape scale
-        'm3-xs': '4px',
-        'm3-sm': '8px',
-        'm3-md': '12px',
-        'm3-lg': '16px',
-        'm3-xl': '28px',
+        // M3 Expressive shape scale — larger, rounder corners
+        'm3-xs': '8px',
+        'm3-sm': '12px',
+        'm3-md': '16px',
+        'm3-lg': '24px',
+        'm3-xl': '32px',
+        'm3-2xl': '40px',
       },
     },
   },
