@@ -423,6 +423,34 @@ export class PaymentService {
   /* Refunds                                                       */
   /* ------------------------------------------------------------ */
 
+  /**
+   * Delete a payment record. Allowed for non-settled statuses (pending,
+   * overdue, failed, cancelled, refunded) — none of which contribute live
+   * income to the balance. A PAID payment must be refunded first (which
+   * reverses its income/split), then it can be deleted.
+   */
+  async remove(communityId: string, paymentId: string, deletedBy: string): Promise<void> {
+    const payment = await this.getById(communityId, paymentId);
+    if (payment.status === PaymentStatus.PAID) {
+      throw new BusinessRuleError(
+        'A paid payment cannot be deleted — refund it first, then delete the refunded record.'
+      );
+    }
+    await this.payments.deleteById(communityId, paymentId);
+    await this.audit.record({
+      action: AuditAction.DELETE,
+      entity: AuditEntity.PAYMENT,
+      entityId: paymentId,
+      before: {
+        member: String(payment.memberId),
+        amount: payment.amount,
+        type: payment.type,
+        status: payment.status,
+        deletedBy,
+      },
+    });
+  }
+
   async refund(
     communityId: string,
     paymentId: string,

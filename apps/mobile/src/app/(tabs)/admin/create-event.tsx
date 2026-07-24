@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -8,16 +8,17 @@ import {
   Text,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { TextInput } from 'react-native-paper';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   EventCategory,
   EventFundingMode,
   toPaise,
+  toRupees,
 } from '@community-finance/shared';
-import { useCreateEvent, useMemberPicker } from '@/lib/admin';
+import { useCreateEvent, useMemberPicker, useUpdateEvent } from '@/lib/admin';
 import { apiErrorMessage } from '@/lib/api';
+import { useEvent } from '@/lib/queries';
 import { inr } from '@/lib/format';
 import { Field, FormScreen, PickerField, SegmentField, SubmitBar } from '@/components/form';
 
@@ -32,8 +33,12 @@ const CATEGORIES = [
 
 export default function CreateEventScreen() {
   const router = useRouter();
+  const { id } = useLocalSearchParams<{ id?: string }>();
+  const isEdit = Boolean(id);
   const create = useCreateEvent();
+  const update = useUpdateEvent(id ?? '');
   const { data: members } = useMemberPicker();
+  const { data: existing } = useEvent(id ?? '');
 
   const [name, setName] = useState('');
   const [category, setCategory] = useState<EventCategory>(EventCategory.OTHER);
@@ -42,6 +47,24 @@ export default function CreateEventScreen() {
   const [fundingMode, setFundingMode] = useState<EventFundingMode>(EventFundingMode.SPLIT);
   const [excluded, setExcluded] = useState<Set<string>>(new Set());
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Prefill when editing.
+  useEffect(() => {
+    if (isEdit && existing) {
+      setName(existing.name);
+      setCategory(existing.category);
+      setDate(existing.date.slice(0, 10));
+      setBudget(String(toRupees(existing.budget)));
+      setFundingMode(existing.fundingMode);
+    }
+  }, [isEdit, existing]);
+
+  useEffect(() => {
+    if (isEdit && existing && existing.participantIds.length > 0 && (members?.length ?? 0) > 0) {
+      const included = new Set(existing.participantIds);
+      setExcluded(new Set((members ?? []).filter((m) => !included.has(m.id)).map((m) => m.id)));
+    }
+  }, [isEdit, existing, members]);
 
   const allMembers = members ?? [];
   const participants = useMemo(
@@ -73,32 +96,44 @@ export default function CreateEventScreen() {
     setErrors(e);
     if (Object.keys(e).length > 0) return;
 
-    create.mutate(
-      {
-        name: name.trim(),
-        category,
-        date: new Date(date),
-        budget: b,
-        fundingMode,
-        participantIds:
-          fundingMode === EventFundingMode.SPLIT && excluded.size > 0
-            ? participants.map((m) => m.id)
-            : [],
-        images: [],
-        budgetOverride: false,
-      },
-      {
+    const payload = {
+      name: name.trim(),
+      category,
+      date: new Date(date),
+      budget: b,
+      fundingMode,
+      participantIds:
+        fundingMode === EventFundingMode.SPLIT && excluded.size > 0
+          ? participants.map((m) => m.id)
+          : [],
+      budgetOverride: false,
+    };
+
+    if (isEdit) {
+      update.mutate(payload, {
         onSuccess: () => {
-          Alert.alert('Event created', 'The event and member shares have been set up.');
+          Alert.alert('Event updated', 'Your changes have been saved.');
           router.back();
         },
         onError: (err) => Alert.alert('Failed', apiErrorMessage(err)),
-      }
-    );
+      });
+    } else {
+      create.mutate(
+        { ...payload, images: [] },
+        {
+          onSuccess: () => {
+            Alert.alert('Event created', 'The event and member shares have been set up.');
+            router.back();
+          },
+          onError: (err) => Alert.alert('Failed', apiErrorMessage(err)),
+        }
+      );
+    }
   }
 
   return (
     <FormScreen>
+      <Stack.Screen options={{ title: isEdit ? 'Edit event' : 'Create event' }} />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} className="flex-1">
         <ScrollView contentContainerClassName="p-4" keyboardShouldPersistTaps="handled">
           <Field label="Event name" value={name} onChangeText={setName} error={errors.name} />
@@ -195,8 +230,8 @@ export default function CreateEventScreen() {
           <View className="h-2" />
         </ScrollView>
         <SubmitBar
-          label="Create event"
-          loading={create.isPending}
+          label={isEdit ? 'Save changes' : 'Create event'}
+          loading={create.isPending || update.isPending}
           disabled={fundingMode === EventFundingMode.SPLIT && participants.length === 0}
           onPress={submit}
         />

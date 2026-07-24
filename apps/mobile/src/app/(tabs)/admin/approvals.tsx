@@ -1,8 +1,9 @@
 import { Alert, RefreshControl, ScrollView, Text, View } from 'react-native';
-import { Button } from 'react-native-paper';
+import { Button, IconButton } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { ExpenseDto, PaymentDto } from '@community-finance/shared';
 import {
+  useDeletePayment,
   usePendingExpenses,
   usePendingPayments,
   useReviewExpense,
@@ -64,13 +65,28 @@ export default function ApprovalsScreen() {
 
 function PaymentApproval({ payment }: { payment: PaymentDto }) {
   const review = useReviewPayment();
-  const busy = review.isPending;
+  const del = useDeletePayment();
+  const busy = review.isPending || del.isPending;
 
   function act(action: 'APPROVE' | 'REJECT') {
     review.mutate(
       { id: payment.id, action },
       { onError: (err) => Alert.alert('Failed', apiErrorMessage(err)) }
     );
+  }
+
+  function remove() {
+    Alert.alert('Delete payment record?', 'This permanently removes the entry.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () =>
+          del.mutate(payment.id, {
+            onError: (err) => Alert.alert('Failed', apiErrorMessage(err)),
+          }),
+      },
+    ]);
   }
 
   return (
@@ -90,13 +106,14 @@ function PaymentApproval({ payment }: { payment: PaymentDto }) {
           {inr(payment.amount)}
         </Text>
       </View>
-      <View className="mt-3 flex-row gap-2">
-        <Button mode="contained" compact icon="check" loading={busy} onPress={() => act('APPROVE')} style={{ flex: 1 }}>
+      <View className="mt-3 flex-row items-center gap-2">
+        <Button mode="contained" compact icon="check" loading={review.isPending} onPress={() => act('APPROVE')} style={{ flex: 1 }}>
           Approve
         </Button>
         <Button mode="outlined" compact icon="close" disabled={busy} onPress={() => act('REJECT')} style={{ flex: 1 }}>
           Reject
         </Button>
+        <IconButton icon="trash-can-outline" size={20} disabled={busy} onPress={remove} />
       </View>
     </Card>
   );

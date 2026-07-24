@@ -11,10 +11,12 @@ import type {
   CreateIncomeInput,
   CreateMemberInput,
   EventDto,
+  EventStatus,
   ExpenseDto,
   MemberDto,
   PaginationMeta,
   PaymentDto,
+  UpdateEventInput,
   UserStatus,
 } from '@community-finance/shared';
 import { api } from './api';
@@ -203,6 +205,49 @@ export function useCreateEvent() {
       return res.data.data;
     },
     onSuccess: () => invalidate([['events'], ['dashboard']]),
+  });
+}
+
+export function useUpdateEvent(id: string) {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async (input: UpdateEventInput) => {
+      const res = await api.patch<ApiSuccess<EventDto>>(`/events/${id}`, input);
+      return res.data.data;
+    },
+    onSuccess: () => invalidate([['events'], ['dashboard']]),
+  });
+}
+
+export function useChangeEventStatus(id: string) {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async (status: EventStatus) => {
+      const res = await api.post<ApiSuccess<EventDto>>(`/events/${id}/status`, { status });
+      return res.data.data;
+    },
+    onSuccess: () => invalidate([['events'], ['dashboard']]),
+  });
+}
+
+export function useDeleteEvent() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/events/${id}`);
+    },
+    onSuccess: () => invalidate([['events'], ['dashboard']]),
+  });
+}
+
+export function useDeletePayment() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/payments/${id}`);
+    },
+    onSuccess: () =>
+      invalidate([['admin', 'pending-payments'], ['payments'], ['dashboard']]),
   });
 }
 

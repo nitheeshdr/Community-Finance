@@ -1,10 +1,18 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
-import { useLocalSearchParams, Stack } from 'expo-router';
-import { EventFundingMode, PaymentStatus } from '@community-finance/shared';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import { useLocalSearchParams, useRouter, Stack, type Href } from 'expo-router';
+import { Menu } from 'react-native-paper';
+import {
+  EventFundingMode,
+  EventStatus,
+  PaymentStatus,
+  UserRole,
+} from '@community-finance/shared';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
+import { useChangeEventStatus, useDeleteEvent } from '@/lib/admin';
+import { apiErrorMessage } from '@/lib/api';
 import { formatDate, inr } from '@/lib/format';
 import { payEventShare } from '@/lib/pay';
 import { useEvent, useEventSplits } from '@/lib/queries';
@@ -13,14 +21,21 @@ import { Card, Row, SectionTitle, StatusBadge } from '@/components/ui';
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const router = useRouter();
   const qc = useQueryClient();
   const { data: event, isLoading } = useEvent(id);
   const { data: splits } = useEventSplits(id);
   const [paying, setPaying] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const changeStatus = useChangeEventStatus(id);
+  const deleteEvent = useDeleteEvent();
 
+  const isAdmin = user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.ADMIN;
+  const isSuperAdmin = user?.role === UserRole.SUPER_ADMIN;
   const mySplit = splits?.find((s) => s.memberId === user?.id);
   const paidCount = splits?.filter((s) => s.status === PaymentStatus.PAID).length ?? 0;
   const remaining = mySplit ? mySplit.splitAmount - mySplit.paidAmount : 0;
+  const isOpen = event?.status === EventStatus.ACTIVE || event?.status === EventStatus.DRAFT;
 
   async function payNow() {
     setPaying(true);
@@ -29,6 +44,46 @@ export default function EventDetailScreen() {
     } finally {
       setPaying(false);
     }
+  }
+
+  function onEdit() {
+    setMenuOpen(false);
+    router.push(`/admin/create-event?id=${id}` as Href);
+  }
+
+  function onStatus(status: EventStatus, label: string) {
+    setMenuOpen(false);
+    Alert.alert(`${label} event?`, undefined, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: label,
+        style: status === EventStatus.CANCELLED ? 'destructive' : 'default',
+        onPress: () =>
+          changeStatus.mutate(status, {
+            onError: (err) => Alert.alert('Failed', apiErrorMessage(err)),
+          }),
+      },
+    ]);
+  }
+
+  function onDelete() {
+    setMenuOpen(false);
+    Alert.alert(
+      'Delete event?',
+      'Only possible if no expenses or collections exist — otherwise cancel it instead.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () =>
+            deleteEvent.mutate(id, {
+              onSuccess: () => router.back(),
+              onError: (err) => Alert.alert('Cannot delete', apiErrorMessage(err)),
+            }),
+        },
+      ]
+    );
   }
 
   if (isLoading || !event) {
@@ -41,7 +96,43 @@ export default function EventDetailScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: event.name }} />
+      <Stack.Screen
+        options={{
+          title: event.name,
+          headerRight: isAdmin
+            ? () => (
+                <Menu
+                  visible={menuOpen}
+                  onDismiss={() => setMenuOpen(false)}
+                  anchor={
+                    <Pressable onPress={() => setMenuOpen(true)} hitSlop={8}>
+                      <MaterialCommunityIcons name="dots-vertical" size={22} color="#1B1B21" />
+                    </Pressable>
+                  }
+                >
+                  {isOpen && <Menu.Item leadingIcon="pencil-outline" onPress={onEdit} title="Edit" />}
+                  {isOpen && (
+                    <Menu.Item
+                      leadingIcon="lock-outline"
+                      onPress={() => onStatus(EventStatus.CLOSED, 'Close')}
+                      title="Close"
+                    />
+                  )}
+                  {event.status === EventStatus.ACTIVE && (
+                    <Menu.Item
+                      leadingIcon="close-circle-outline"
+                      onPress={() => onStatus(EventStatus.CANCELLED, 'Cancel')}
+                      title="Cancel"
+                    />
+                  )}
+                  {isSuperAdmin && (
+                    <Menu.Item leadingIcon="trash-can-outline" onPress={onDelete} title="Delete" />
+                  )}
+                </Menu>
+              )
+            : undefined,
+        }}
+      />
       <ScrollView
         className="flex-1 bg-surface dark:bg-surface-d"
         contentContainerClassName="p-4 pb-10"

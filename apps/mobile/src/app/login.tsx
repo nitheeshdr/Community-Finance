@@ -3,11 +3,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, HelperText, TextInput } from 'react-native-paper';
+import { Button, HelperText, Surface, Text, TextInput } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { PHONE_REGEX } from '@community-finance/shared';
@@ -51,31 +50,35 @@ export default function LoginScreen() {
   }
 
   return (
-    <View className="flex-1 bg-surface">
-      {/* Hero */}
-      <View className="items-center rounded-b-[40px] bg-primary pb-10 pt-20">
-        <View className="rounded-3xl bg-white/15 p-3">
-          <Logo size={72} />
-        </View>
-        <Text className="mt-4 text-2xl font-bold text-white">Community Finance</Text>
-        <Text className="mt-1 text-sm text-indigo-100">
-          Transparent finances for your community
-        </Text>
-      </View>
-
+    <SafeAreaView className="flex-1 bg-surface">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         className="flex-1"
       >
         <ScrollView
-          contentContainerClassName="flex-grow px-6 pb-8"
+          contentContainerClassName="flex-grow justify-center px-6 py-10"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Form card overlapping the hero */}
-          <View className="-mt-6 rounded-3xl bg-surface-lowest p-5 shadow-lg">
-            <Text className="text-lg font-bold text-on-surface">Welcome back</Text>
-            <Text className="mb-4 mt-0.5 text-sm text-on-surface-variant">
+          {/* Brand */}
+          <View className="mb-8 items-center">
+            <View className="mb-5 h-24 w-24 items-center justify-center rounded-full bg-primary-container">
+              <Logo size={64} />
+            </View>
+            <Text variant="headlineMedium" style={{ fontWeight: '700', color: '#1B1B21' }}>
+              Community Finance
+            </Text>
+            <Text variant="bodyMedium" style={{ color: '#46464F', marginTop: 4 }}>
+              Transparent finances for your community
+            </Text>
+          </View>
+
+          {/* MD3 elevated card */}
+          <Surface elevation={1} style={{ borderRadius: 28, padding: 20 }}>
+            <Text variant="titleLarge" style={{ fontWeight: '700', color: '#1B1B21' }}>
+              Welcome back
+            </Text>
+            <Text variant="bodyMedium" style={{ color: '#46464F', marginTop: 2, marginBottom: 16 }}>
               Sign in with your registered mobile number
             </Text>
 
@@ -90,7 +93,7 @@ export default function LoginScreen() {
               left={<TextInput.Icon icon="phone-outline" />}
               testID="login-phone"
             />
-            <View className="h-3" />
+            <View style={{ height: 12 }} />
             <TextInput
               mode="outlined"
               label="Password"
@@ -117,31 +120,30 @@ export default function LoginScreen() {
               onPress={() => void onSubmit()}
               loading={submitting}
               disabled={submitting}
-              contentStyle={{ height: 50, flexDirection: 'row-reverse' }}
+              contentStyle={{ height: 52, flexDirection: 'row-reverse' }}
               icon="arrow-right"
+              style={{ borderRadius: 26 }}
               testID="login-submit"
             >
               Sign in
             </Button>
-          </View>
+          </Surface>
 
-          <View className="mt-5 flex-row items-center justify-center gap-1.5 rounded-2xl bg-surface-container px-4 py-3">
-            <MaterialCommunityIcons name="shield-key-outline" size={15} color="#5D5C72" />
-            <Text className="text-xs text-on-surface-variant">
-              Forgot your password? Ask your community admin to reset it.
+          {/* Helper + credit */}
+          <View className="mt-6 flex-row items-center justify-center gap-1.5">
+            <MaterialCommunityIcons name="shield-key-outline" size={14} color="#5D5C72" />
+            <Text variant="bodySmall" style={{ color: '#46464F' }}>
+              Forgot your password? Ask your community admin.
             </Text>
           </View>
-
-          <View className="mt-auto items-center pt-8">
-            <View className="flex-row items-center gap-1.5">
-              <MaterialCommunityIcons name="hammer-wrench" size={12} color="#777680" />
-              <Text className="text-xs font-semibold text-on-surface-variant">
-                Built by Setups Works
-              </Text>
-            </View>
+          <View className="mt-6 flex-row items-center justify-center gap-1.5">
+            <MaterialCommunityIcons name="hammer-wrench" size={12} color="#777680" />
+            <Text variant="labelMedium" style={{ color: '#5D5C72', fontWeight: '600' }}>
+              Built by Setups Works
+            </Text>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </View>
+    </SafeAreaView>
   );
 }
