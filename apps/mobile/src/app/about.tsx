@@ -1,8 +1,11 @@
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter, type Href } from 'expo-router';
 import Constants from 'expo-constants';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Logo } from '@/components/logo';
+
+const setupsWorksLogo = require('../../assets/brand/setups-works.png');
 
 const VERSION = Constants.expoConfig?.version ?? '1.0.0';
 
@@ -37,9 +40,16 @@ export default function AboutScreen() {
 
       {/* Built by Setups Works */}
       <View className="mt-8 items-center">
-        <Text className="text-xs uppercase tracking-wider text-on-surface-variant">Built by</Text>
-        <Text className="mt-1 text-lg font-bold text-on-surface">Setups Works</Text>
-        <Text className="mt-0.5 text-xs text-on-surface-variant">The Digital Agency</Text>
+        <Text className="mb-3 text-xs uppercase tracking-wider text-on-surface-variant">
+          Built by
+        </Text>
+        <Pressable onPress={() => void Linking.openURL('https://setups.works')}>
+          <Image
+            source={setupsWorksLogo}
+            style={{ width: 220, height: 80 }}
+            contentFit="contain"
+          />
+        </Pressable>
 
         <Pressable
           onPress={() => void Linking.openURL('https://setups.works')}
