@@ -1,6 +1,8 @@
-import { View, useColorScheme } from 'react-native';
+import { View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { UserRole } from '@community-finance/shared';
+import { useAuth } from '@/lib/auth-context';
 import { getScheme } from '@/lib/theme';
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
@@ -36,8 +38,9 @@ function NavIcon({
 }
 
 export default function TabsLayout() {
-  const dark = useColorScheme() === 'dark';
-  const s = getScheme(dark);
+  const s = getScheme(false);
+  const { user } = useAuth();
+  const isAdmin = user?.role === UserRole.SUPER_ADMIN || user?.role === UserRole.ADMIN;
 
   const screenIcon =
     (outline: IconName, filled: IconName) =>
@@ -85,6 +88,16 @@ export default function TabsLayout() {
         options={{
           title: 'Events',
           tabBarIcon: screenIcon('calendar-blank-outline', 'calendar-blank'),
+        }}
+      />
+      <Tabs.Screen
+        name="admin"
+        options={{
+          title: 'Admin',
+          headerShown: false,
+          // Hidden entirely for members; visible only to admins.
+          href: isAdmin ? undefined : null,
+          tabBarIcon: screenIcon('shield-outline', 'shield'),
         }}
       />
       <Tabs.Screen
