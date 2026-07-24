@@ -86,13 +86,10 @@ export class EventService {
     const balance = await this.balance.getCurrentBalance(communityId);
 
     if (input.fundingMode === EventFundingMode.BALANCE) {
-      // Balance-funded events must actually fit in the available balance.
-      if (budgetPaise > balance) {
-        throw new BusinessRuleError(
-          `Available balance is ${formatINR(balance)} — a balance-funded event cannot ` +
-            `budget ${formatINR(budgetPaise)}. Reduce the budget or split it among members.`
-        );
-      }
+      // Balance-funded events draw straight from the community balance.
+      // The budget may exceed the current balance — approved expenses then
+      // take the balance negative (an overspend the admin accepts), rather
+      // than blocking the event. No member contributions are collected.
     } else if (budgetPaise > balance) {
       // SPLIT mode keeps the original rule with super-admin override.
       if (!input.budgetOverride) {

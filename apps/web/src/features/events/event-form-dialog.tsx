@@ -77,7 +77,7 @@ export function EventFormDialog({
   const pending = createMutation.isPending || updateMutation.isPending;
 
   // Active members for participant selection (SPLIT mode).
-  const { data: members } = useQuery({
+  const { data: members, isLoading: membersLoading } = useQuery({
     queryKey: ['members', 'active-picker'],
     enabled: open,
     queryFn: async () => {
@@ -316,11 +316,21 @@ export function EventFormDialog({
                     </label>
                   );
                 })}
-                {filteredMembers.length === 0 && (
-                  <p className="py-3 text-center text-xs text-muted-foreground">No members found.</p>
+                {membersLoading && (
+                  <p className="py-3 text-center text-xs text-muted-foreground">Loading members…</p>
+                )}
+                {!membersLoading && allMembers.length === 0 && (
+                  <p className="py-3 text-center text-xs text-muted-foreground">
+                    No active members yet. Add members first, or use “From community balance”.
+                  </p>
+                )}
+                {!membersLoading && allMembers.length > 0 && filteredMembers.length === 0 && (
+                  <p className="py-3 text-center text-xs text-muted-foreground">
+                    No members match “{search}”.
+                  </p>
                 )}
               </div>
-              {participants.length === 0 && (
+              {!membersLoading && allMembers.length > 0 && participants.length === 0 && (
                 <p className="text-xs text-destructive">Select at least one participant.</p>
               )}
             </div>
